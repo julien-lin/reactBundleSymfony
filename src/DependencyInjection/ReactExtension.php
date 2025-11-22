@@ -20,13 +20,13 @@ class ReactExtension extends Extension
         $configuration = new Configuration();
         $config = $this->processConfiguration($configuration, $configs);
 
-        $container->setParameter('react_bundle.build_dir', $config['build_dir'] ?? 'build');
-        $container->setParameter('react_bundle.assets_dir', $config['assets_dir'] ?? 'assets');
+        $container->setParameter('react.build_dir', $config['build_dir'] ?? 'build');
+        $container->setParameter('react.assets_dir', $config['assets_dir'] ?? 'assets');
     }
 
     public function getAlias(): string
     {
-        return 'react_bundle';
+        return 'react';
     }
 }
 

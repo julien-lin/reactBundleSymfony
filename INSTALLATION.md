@@ -11,9 +11,9 @@ npm install
 
 Le bundle est déjà enregistré dans `config/bundles.php`.
 
-Vérifiez la configuration dans `config/packages/react_bundle.yaml` :
+Vérifiez la configuration dans `config/packages/react.yaml` :
 ```yaml
-react_bundle:
+react:
     build_dir: 'build'
     assets_dir: 'assets'
 ```

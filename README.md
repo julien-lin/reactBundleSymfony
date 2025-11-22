@@ -25,9 +25,9 @@ Le script d'installation Composer installera automatiquement les dépendances np
 
 1. Le bundle s'enregistre automatiquement via Symfony Flex.
 
-2. Configurez le bundle dans `config/packages/react_bundle.yaml` :
+2. Configurez le bundle dans `config/packages/react.yaml` :
 ```yaml
-react_bundle:
+react:
     build_dir: 'build'
     assets_dir: 'assets'
 ```
@@ -113,9 +113,9 @@ ReactBundle/
 
 ### Personnaliser le serveur Vite
 
-Dans `config/packages/react_bundle.yaml` :
+Dans `config/packages/react.yaml` :
 ```yaml
-react_bundle:
+react:
     build_dir: 'build'
     assets_dir: 'assets'
 ```

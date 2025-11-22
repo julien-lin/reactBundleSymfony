@@ -13,7 +13,7 @@ services:
     ReactBundle\Service\ReactRenderer:
         arguments:
             $twig: '@twig'
-            $buildDir: '%react_bundle.build_dir%'
+            $buildDir: '%react.build_dir%'
 
     ReactBundle\Twig\ReactExtension:
         tags:
@@ -23,6 +23,6 @@ services:
         arguments:
             $isDev: '%kernel.debug%'
             $viteServer: 'http://localhost:3000'
-            $buildDir: '%react_bundle.build_dir%'
+            $buildDir: '%react.build_dir%'
         tags:
             - { name: twig.extension }

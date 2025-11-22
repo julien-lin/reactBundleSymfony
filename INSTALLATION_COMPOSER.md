@@ -72,10 +72,10 @@ return [
 
 ### 4. Configurer le bundle
 
-Créez `config/packages/react_bundle.yaml` :
+Créez `config/packages/react.yaml` :
 
 ```yaml
-react_bundle:
+react:
     build_dir: 'build'
     assets_dir: 'assets'
 ```
