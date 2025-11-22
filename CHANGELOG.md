@@ -7,6 +7,14 @@ et ce projet adhère au [Semantic Versioning](https://semver.org/spec/v2.0.0.htm
 
 ## [Unreleased]
 
+## [1.0.3] - 2025-01-XX
+
+### Amélioré
+- Installation automatique des dépendances npm lors de `composer install/update` (plus user-friendly)
+- Vérification si `node_modules` existe déjà pour éviter les réinstallations inutiles
+- Messages plus clairs dans le ScriptHandler avec instructions de fallback
+- Timeout augmenté pour les installations npm lentes (600s au lieu de 300s)
+
 ## [1.0.2] - 2025-01-XX
 
 ### Amélioré
