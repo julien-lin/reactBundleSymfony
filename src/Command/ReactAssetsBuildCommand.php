@@ -120,19 +120,50 @@ class ReactAssetsBuildCommand extends Command
             '/opt/node/bin/npm',
         ];
 
-        foreach ($possiblePaths as $path) {
-            // Si c'est juste "npm", essayer de l'exécuter directement
-            if ($path === 'npm') {
-                $process = new Process(['which', 'npm']);
-                $process->run();
-                if ($process->isSuccessful()) {
-                    $foundPath = trim($process->getOutput());
-                    if ($foundPath && file_exists($foundPath)) {
-                        return $foundPath;
+        // Chercher npm via which/whereis
+        $whichProcess = new Process(['which', 'npm']);
+        $whichProcess->run();
+        if ($whichProcess->isSuccessful()) {
+            $foundPath = trim($whichProcess->getOutput());
+            if ($foundPath && file_exists($foundPath) && is_executable($foundPath)) {
+                return $foundPath;
+            }
+        }
+
+        // Chercher via whereis (Linux)
+        $whereisProcess = new Process(['whereis', '-b', 'npm']);
+        $whereisProcess->run();
+        if ($whereisProcess->isSuccessful()) {
+            $output = trim($whereisProcess->getOutput());
+            if (preg_match('/npm:\s*(.+)/', $output, $matches)) {
+                $paths = explode(' ', trim($matches[1]));
+                foreach ($paths as $path) {
+                    if (file_exists($path) && is_executable($path)) {
+                        return $path;
                     }
                 }
-            } elseif (file_exists($path) && is_executable($path)) {
+            }
+        }
+
+        // Vérifier les chemins possibles
+        foreach ($possiblePaths as $path) {
+            if ($path !== 'npm' && file_exists($path) && is_executable($path)) {
                 return $path;
+            }
+        }
+
+        // Chercher dans les emplacements nvm courants
+        $home = getenv('HOME') ?: getenv('USERPROFILE');
+        if ($home) {
+            $nvmPaths = [
+                $home . '/.nvm/versions/node/*/bin/npm',
+                $home . '/.nvm/current/bin/npm',
+            ];
+            foreach ($nvmPaths as $pattern) {
+                $glob = glob($pattern);
+                if (!empty($glob) && file_exists($glob[0]) && is_executable($glob[0])) {
+                    return $glob[0];
+                }
             }
         }
 
