@@ -9,7 +9,7 @@ class Configuration implements ConfigurationInterface
 {
     public function getConfigTreeBuilder(): TreeBuilder
     {
-        $treeBuilder = new TreeBuilder('react_bundle');
+        $treeBuilder = new TreeBuilder('react');
 
         $treeBuilder->getRootNode()
             ->children()
