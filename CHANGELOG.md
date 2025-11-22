@@ -7,6 +7,12 @@ et ce projet adhère au [Semantic Versioning](https://semver.org/spec/v2.0.0.htm
 
 ## [Unreleased]
 
+## [1.0.5] - 2025-01-XX
+
+### Corrigé
+- Correction du namespace Twig : utilisation de `@React` au lieu de `@ReactBundle` (convention Symfony)
+- Mise à jour de la documentation et des exemples avec le bon namespace
+
 ## [1.0.4] - 2025-01-XX
 
 ### Corrigé
