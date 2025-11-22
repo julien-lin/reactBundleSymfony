@@ -7,6 +7,14 @@ et ce projet adhère au [Semantic Versioning](https://semver.org/spec/v2.0.0.htm
 
 ## [Unreleased]
 
+## [1.0.2] - 2025-01-XX
+
+### Amélioré
+- Détection automatique de npm dans plusieurs chemins communs (plus user-friendly)
+- Vérification automatique de l'installation des dépendances npm avant le build
+- Proposition d'installation automatique des dépendances npm si manquantes
+- Messages d'erreur plus clairs avec instructions pour résoudre les problèmes
+
 ## [1.0.1] - 2025-01-XX
 
 ### Corrigé
