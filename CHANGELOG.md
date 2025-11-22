@@ -7,6 +7,13 @@ et ce projet adhère au [Semantic Versioning](https://semver.org/spec/v2.0.0.htm
 
 ## [Unreleased]
 
+## [1.0.1] - 2025-01-XX
+
+### Corrigé
+- Correction de l'alias de l'extension : changement de `react_bundle` vers `react` pour respecter la convention Symfony
+- Mise à jour des paramètres de configuration pour utiliser `react.*` au lieu de `react_bundle.*`
+- Mise à jour de la documentation pour refléter le changement de nom de fichier de configuration
+
 ## [1.0.0] - 2025-01-XX
 
 ### Ajouté
