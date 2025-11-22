@@ -22,17 +22,15 @@ class ScriptHandler
 
         $io->write('<info>Installation des dépendances npm pour ReactBundle...</info>');
 
-        // Vérifier si npm est disponible
-        $npmCheck = new Process(['npm', '--version']);
-        $npmCheck->run();
-
-        if (!$npmCheck->isSuccessful()) {
+        // Trouver npm
+        $npmPath = self::findNpm();
+        if (!$npmPath) {
             $io->write('<warning>npm n\'est pas disponible. Veuillez installer les dépendances manuellement avec: cd ' . $bundlePath . ' && npm install</warning>');
             return;
         }
 
         // Installer les dépendances npm
-        $process = new Process(['npm', 'install'], $bundlePath);
+        $process = new Process([$npmPath, 'install'], $bundlePath);
         $process->setTimeout(300);
 
         try {
@@ -44,6 +42,40 @@ class ScriptHandler
             $io->write('<error>Erreur lors de l\'installation npm: ' . $e->getMessage() . '</error>');
             $io->write('<comment>Vous pouvez installer manuellement avec: cd ' . $bundlePath . ' && npm install</comment>');
         }
+    }
+
+    /**
+     * Trouve le chemin vers npm
+     */
+    private static function findNpm(): ?string
+    {
+        // Chemins communs pour npm
+        $possiblePaths = [
+            'npm', // Dans le PATH
+            '/usr/bin/npm',
+            '/usr/local/bin/npm',
+            '/opt/homebrew/bin/npm',
+            '/usr/local/node/bin/npm',
+            '/opt/node/bin/npm',
+        ];
+
+        foreach ($possiblePaths as $path) {
+            // Si c'est juste "npm", essayer de l'exécuter directement
+            if ($path === 'npm') {
+                $process = new Process(['which', 'npm']);
+                $process->run();
+                if ($process->isSuccessful()) {
+                    $foundPath = trim($process->getOutput());
+                    if ($foundPath && file_exists($foundPath)) {
+                        return $foundPath;
+                    }
+                }
+            } elseif (file_exists($path) && is_executable($path)) {
+                return $path;
+            }
+        }
+
+        return null;
     }
 }
 
