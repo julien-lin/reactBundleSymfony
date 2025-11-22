@@ -33,7 +33,7 @@ class ReactRenderer
         // Échapper les props pour la sécurité
         $escapedProps = json_encode($props, JSON_HEX_TAG | JSON_HEX_AMP | JSON_HEX_APOS | JSON_HEX_QUOT);
 
-        return $this->twig->render('@ReactBundle/react_component.html.twig', [
+        return $this->twig->render('@React/react_component.html.twig', [
             'component_id' => $id,
             'component_name' => $componentName,
             'props' => $escapedProps,

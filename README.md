@@ -43,7 +43,7 @@ npm install
 ### Dans vos templates Twig
 
 ```twig
-{% extends '@ReactBundle/react_base.html.twig' %}
+{% extends '@React/react_base.html.twig' %}
 
 {% block body %}
     {{ react_component('ExampleComponent', {
