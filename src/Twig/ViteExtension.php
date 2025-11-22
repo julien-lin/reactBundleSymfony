@@ -31,50 +31,71 @@ class ViteExtension extends AbstractExtension
      */
     public function renderViteScriptTags(string $entry): string
     {
+        // Chemin vers public/build/ depuis le bundle (vendor/ ou src/)
+        $bundlePath = $this->getBundlePath();
+        
+        // Calculer le projet root : si dans vendor/, remonter de 3 niveaux, sinon 2
+        if (strpos($bundlePath, '/vendor/') !== false) {
+            $projectRoot = dirname($bundlePath, 3); // vendor/vendor/package -> racine
+        } else {
+            $projectRoot = dirname($bundlePath, 2); // src/ReactBundle -> racine
+        }
+        
+        // Le manifest peut être dans .vite/ ou directement dans build/
+        $manifestPath = $projectRoot . '/public/' . $this->buildDir . '/.vite/manifest.json';
+        if (!file_exists($manifestPath)) {
+            $manifestPath = $projectRoot . '/public/' . $this->buildDir . '/manifest.json';
+        }
+        $manifestExists = file_exists($manifestPath);
+        
+        // Si le manifest existe, utiliser le build de production (même en dev)
+        if ($manifestExists) {
+            $manifest = json_decode(file_get_contents($manifestPath), true);
+            
+            // Chercher l'entrée dans le manifest (peut être 'app' ou 'js/app.jsx')
+            $manifestKey = $entry;
+            if (!isset($manifest[$manifestKey])) {
+                // Essayer avec le chemin complet
+                $manifestKey = $entry === 'app' ? 'js/app.jsx' : $entry;
+                if (!isset($manifest[$manifestKey])) {
+                    return sprintf('<!-- Entry "%s" not found in manifest. Available keys: %s -->', $entry, implode(', ', array_keys($manifest)));
+                }
+            }
+
+            $entryData = $manifest[$manifestKey];
+            $html = sprintf(
+                '<script type="module" src="/%s/%s"></script>',
+                $this->buildDir,
+                $entryData['file']
+            );
+
+            // Ajouter les imports CSS si présents
+            if (isset($entryData['css'])) {
+                foreach ($entryData['css'] as $css) {
+                    $html .= sprintf(
+                        '<link rel="stylesheet" href="/%s/%s">',
+                        $this->buildDir,
+                        $css
+                    );
+                }
+            }
+
+            return $html;
+        }
+        
+        // Si pas de manifest et en dev, essayer le serveur Vite
         if ($this->isDev) {
-            // En dev, Vite sert directement depuis le serveur
+            $viteUrl = rtrim($this->viteServer, '/');
             return sprintf(
                 '<script type="module" src="%s/@vite/client"></script><script type="module" src="%s/%s"></script>',
-                rtrim($this->viteServer, '/'),
-                rtrim($this->viteServer, '/'),
+                $viteUrl,
+                $viteUrl,
                 $entry === 'app' ? 'js/app.jsx' : $entry
             );
         }
-
-        // Chemin vers public/build/ depuis le bundle (vendor/ ou src/)
-        $bundlePath = $this->getBundlePath();
-        $projectRoot = dirname($bundlePath, 2); // Remonter de vendor/vendor/package ou src/ReactBundle
-        $manifestPath = $projectRoot . '/public/' . $this->buildDir . '/manifest.json';
         
-        if (!file_exists($manifestPath)) {
-            return sprintf('<!-- Vite manifest not found: %s -->', $manifestPath);
-        }
-
-        $manifest = json_decode(file_get_contents($manifestPath), true);
-        
-        if (!isset($manifest[$entry])) {
-            return sprintf('<!-- Entry "%s" not found in manifest -->', $entry);
-        }
-
-        $entryData = $manifest[$entry];
-        $html = sprintf(
-            '<script type="module" src="/%s/%s"></script>',
-            $this->buildDir,
-            $entryData['file']
-        );
-
-        // Ajouter les imports CSS si présents
-        if (isset($entryData['css'])) {
-            foreach ($entryData['css'] as $css) {
-                $html .= sprintf(
-                    '<link rel="stylesheet" href="/%s/%s">',
-                    $this->buildDir,
-                    $css
-                );
-            }
-        }
-
-        return $html;
+        // Sinon, erreur
+        return sprintf('<!-- Vite manifest not found: %s -->', $manifestPath);
     }
 
     /**
@@ -88,8 +109,19 @@ class ViteExtension extends AbstractExtension
 
         // Chemin vers public/build/ depuis le bundle (vendor/ ou src/)
         $bundlePath = $this->getBundlePath();
-        $projectRoot = dirname($bundlePath, 2); // Remonter de vendor/vendor/package ou src/ReactBundle
-        $manifestPath = $projectRoot . '/public/' . $this->buildDir . '/manifest.json';
+        
+        // Calculer le projet root : si dans vendor/, remonter de 3 niveaux, sinon 2
+        if (strpos($bundlePath, '/vendor/') !== false) {
+            $projectRoot = dirname($bundlePath, 3); // vendor/vendor/package -> racine
+        } else {
+            $projectRoot = dirname($bundlePath, 2); // src/ReactBundle -> racine
+        }
+        
+        // Le manifest peut être dans .vite/ ou directement dans build/
+        $manifestPath = $projectRoot . '/public/' . $this->buildDir . '/.vite/manifest.json';
+        if (!file_exists($manifestPath)) {
+            $manifestPath = $projectRoot . '/public/' . $this->buildDir . '/manifest.json';
+        }
         
         if (!file_exists($manifestPath)) {
             return '';
