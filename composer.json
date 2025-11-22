@@ -1,8 +1,5 @@
 {
     "name": "julien-lin/react-bundle-symfony",
-    "replace": {
-        "julien-lin/react-bundle-symfony": "self.version"
-    },
     "type": "symfony-bundle",
     "description": "Bundle Symfony pour intégrer React avec Vite, remplaçant Stimulus",
     "keywords": ["symfony", "bundle", "react", "vite", "twig"],
