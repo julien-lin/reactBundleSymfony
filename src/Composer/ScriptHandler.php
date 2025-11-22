@@ -43,9 +43,20 @@ class ScriptHandler
 
         $io->write('<info>npm trouvé: ' . $npmPath . '</info>');
 
-        // Installer les dépendances npm
-        $process = new Process([$npmPath, 'install'], $bundlePath);
+        // Préparer la commande avec support nvm si nécessaire
+        $installCommand = self::prepareInstallCommand($npmPath);
+        $process = new Process($installCommand, $bundlePath);
         $process->setTimeout(600); // Augmenter le timeout pour les installations lentes
+        
+        // Si npm est dans nvm, définir les variables d'environnement
+        if (strpos($npmPath, '.nvm') !== false) {
+            $nvmDir = dirname(dirname($npmPath));
+            $nodePath = dirname($npmPath);
+            $process->setEnv([
+                'PATH' => $nodePath . ':' . getenv('PATH'),
+                'NVM_DIR' => $nvmDir,
+            ]);
+        }
 
         try {
             $process->mustRun(function ($type, $buffer) use ($io) {
@@ -127,6 +138,24 @@ class ScriptHandler
         }
 
         return null;
+    }
+
+    /**
+     * Prépare la commande d'installation npm avec support nvm si nécessaire
+     */
+    private static function prepareInstallCommand(string $npmPath): array
+    {
+        // Si npm est dans nvm, utiliser bash pour charger l'environnement
+        if (strpos($npmPath, '.nvm') !== false) {
+            $nvmDir = dirname(dirname($npmPath));
+            $nodePath = dirname($npmPath);
+            return [
+                'bash', '-c',
+                "export PATH=\"$nodePath:\$PATH\" && export NVM_DIR=\"$nvmDir\" && $npmPath install"
+            ];
+        }
+
+        return [$npmPath, 'install'];
     }
 }
 
