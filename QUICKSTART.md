@@ -45,7 +45,7 @@ npm run build
 ### Exemple basique
 
 ```twig
-{% extends '@ReactBundle/react_base.html.twig' %}
+{% extends '@React/react_base.html.twig' %}
 
 {% block body %}
     {{ react_component('ExampleComponent', {
