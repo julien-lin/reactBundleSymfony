@@ -20,27 +20,47 @@ class ScriptHandler
             return;
         }
 
-        $io->write('<info>Installation des dépendances npm pour ReactBundle...</info>');
-
-        // Trouver npm
-        $npmPath = self::findNpm();
-        if (!$npmPath) {
-            $io->write('<warning>npm n\'est pas disponible. Veuillez installer les dépendances manuellement avec: cd ' . $bundlePath . ' && npm install</warning>');
+        // Si node_modules existe déjà, ne rien faire
+        if (is_dir($bundlePath . '/node_modules')) {
+            $io->write('<info>Les dépendances npm sont déjà installées.</info>');
             return;
         }
 
+        $io->write('<info>Installation automatique des dépendances npm pour ReactBundle...</info>');
+
+        // Trouver npm avec plusieurs tentatives
+        $npmPath = self::findNpm();
+        
+        if (!$npmPath) {
+            $io->write('<warning>npm n\'a pas pu être trouvé automatiquement.</warning>');
+            $io->write('<comment>Vous pouvez installer les dépendances manuellement avec:</comment>');
+            $io->write('<comment>  cd ' . $bundlePath . ' && npm install</comment>');
+            $io->write('');
+            $io->write('<comment>Ou utiliser la commande Symfony: php bin/console react:build</comment>');
+            $io->write('<comment>qui proposera de les installer automatiquement.</comment>');
+            return;
+        }
+
+        $io->write('<info>npm trouvé: ' . $npmPath . '</info>');
+
         // Installer les dépendances npm
         $process = new Process([$npmPath, 'install'], $bundlePath);
-        $process->setTimeout(300);
+        $process->setTimeout(600); // Augmenter le timeout pour les installations lentes
 
         try {
             $process->mustRun(function ($type, $buffer) use ($io) {
-                $io->write($buffer);
+                // Afficher seulement les messages importants pour ne pas polluer la sortie
+                if ($type === Process::ERR || strpos($buffer, 'error') !== false || strpos($buffer, 'Error') !== false) {
+                    $io->write($buffer, false);
+                } elseif (strpos($buffer, 'added') !== false || strpos($buffer, 'up to date') !== false) {
+                    $io->write($buffer, false);
+                }
             });
-            $io->write('<info>Dépendances npm installées avec succès !</info>');
+            $io->write('<info>✓ Dépendances npm installées avec succès !</info>');
         } catch (\Exception $e) {
             $io->write('<error>Erreur lors de l\'installation npm: ' . $e->getMessage() . '</error>');
             $io->write('<comment>Vous pouvez installer manuellement avec: cd ' . $bundlePath . ' && npm install</comment>');
+            $io->write('<comment>Ou utiliser: php bin/console react:build</comment>');
         }
     }
 
