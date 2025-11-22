@@ -7,6 +7,13 @@ et ce projet adhère au [Semantic Versioning](https://semver.org/spec/v2.0.0.htm
 
 ## [Unreleased]
 
+## [1.0.4] - 2025-01-XX
+
+### Corrigé
+- Support complet de nvm (Node Version Manager) : npm trouvé dans nvm charge maintenant correctement l'environnement Node.js
+- Correction du problème "env: 'node': No such file or directory" lors de l'utilisation de npm via nvm
+- Les commandes npm sont maintenant exécutées via bash avec les variables d'environnement nvm chargées
+
 ## [1.0.3] - 2025-01-XX
 
 ### Amélioré

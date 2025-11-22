@@ -45,8 +45,19 @@ class ReactAssetsBuildCommand extends Command
                 }
 
                 $io->info('Installation des dépendances npm...');
-                $installProcess = new Process([$npmPath, 'install'], $bundlePath);
-                $installProcess->setTimeout(300);
+                $installCommand = $this->prepareInstallCommand($npmPath);
+                $installProcess = new Process($installCommand, $bundlePath);
+                $installProcess->setTimeout(600);
+                
+                // Si npm est dans nvm, définir les variables d'environnement
+                if (strpos($npmPath, '.nvm') !== false) {
+                    $nvmDir = dirname(dirname($npmPath));
+                    $nodePath = dirname($npmPath);
+                    $installProcess->setEnv([
+                        'PATH' => $nodePath . ':' . getenv('PATH'),
+                        'NVM_DIR' => $nvmDir,
+                    ]);
+                }
 
                 try {
                     $installProcess->mustRun(function ($type, $buffer) use ($output) {
@@ -72,20 +83,22 @@ class ReactAssetsBuildCommand extends Command
             return Command::FAILURE;
         }
 
-        if ($dev) {
-            $io->info('Démarrage du serveur Vite en mode développement avec HMR...');
-            $command = [$npmPath, 'run', 'dev'];
-        } elseif ($watch) {
-            $io->info('Build des assets React en mode watch...');
-            $command = [$npmPath, 'run', 'build:watch'];
-        } else {
-            $io->info('Build des assets React pour la production...');
-            $command = [$npmPath, 'run', 'build'];
-        }
+        // Si npm est dans nvm, charger l'environnement nvm
+        $command = $this->prepareNpmCommand($npmPath, $watch, $dev);
 
         $process = new Process($command);
         $process->setTimeout(null);
         $process->setWorkingDirectory($bundlePath);
+        
+        // Si npm est dans nvm, définir les variables d'environnement nécessaires
+        if (strpos($npmPath, '.nvm') !== false) {
+            $nvmDir = dirname(dirname($npmPath));
+            $nodePath = dirname($npmPath);
+            $process->setEnv([
+                'PATH' => $nodePath . ':' . getenv('PATH'),
+                'NVM_DIR' => $nvmDir,
+            ]);
+        }
 
         $io->note('Exécution de: ' . implode(' ', $command) . ' dans ' . $bundlePath);
 
@@ -192,6 +205,62 @@ class ReactAssetsBuildCommand extends Command
         
         // Fallback : remonter depuis le répertoire actuel
         return dirname(__DIR__, 2);
+    }
+
+    /**
+     * Prépare la commande npm avec support nvm si nécessaire
+     */
+    private function prepareNpmCommand(string $npmPath, bool $watch, bool $dev): array
+    {
+        // Si npm est dans nvm, utiliser bash pour charger l'environnement
+        if (strpos($npmPath, '.nvm') !== false) {
+            $nvmDir = dirname(dirname($npmPath));
+            $nodePath = dirname($npmPath);
+            
+            if ($dev) {
+                return [
+                    'bash', '-c',
+                    "export PATH=\"$nodePath:\$PATH\" && export NVM_DIR=\"$nvmDir\" && $npmPath run dev"
+                ];
+            } elseif ($watch) {
+                return [
+                    'bash', '-c',
+                    "export PATH=\"$nodePath:\$PATH\" && export NVM_DIR=\"$nvmDir\" && $npmPath run build:watch"
+                ];
+            } else {
+                return [
+                    'bash', '-c',
+                    "export PATH=\"$nodePath:\$PATH\" && export NVM_DIR=\"$nvmDir\" && $npmPath run build"
+                ];
+            }
+        }
+
+        // Sinon, utiliser npm directement
+        if ($dev) {
+            return [$npmPath, 'run', 'dev'];
+        } elseif ($watch) {
+            return [$npmPath, 'run', 'build:watch'];
+        } else {
+            return [$npmPath, 'run', 'build'];
+        }
+    }
+
+    /**
+     * Prépare la commande d'installation npm avec support nvm si nécessaire
+     */
+    private function prepareInstallCommand(string $npmPath): array
+    {
+        // Si npm est dans nvm, utiliser bash pour charger l'environnement
+        if (strpos($npmPath, '.nvm') !== false) {
+            $nvmDir = dirname(dirname($npmPath));
+            $nodePath = dirname($npmPath);
+            return [
+                'bash', '-c',
+                "export PATH=\"$nodePath:\$PATH\" && export NVM_DIR=\"$nvmDir\" && $npmPath install"
+            ];
+        }
+
+        return [$npmPath, 'install'];
     }
 }
 
