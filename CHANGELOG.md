@@ -7,6 +7,8 @@ et ce projet adhère au [Semantic Versioning](https://semver.org/spec/v2.0.0.htm
 
 ## [Unreleased]
 
+## [1.0.0] - 2025-01-XX
+
 ### Ajouté
 - Bundle Symfony pour intégrer React avec Vite
 - Support du Hot Module Replacement (HMR) en développement
@@ -19,6 +21,8 @@ et ce projet adhère au [Semantic Versioning](https://semver.org/spec/v2.0.0.htm
 - Templates Twig de base pour React
 - Composant d'exemple `ExampleComponent`
 - Hook React d'exemple `useExample`
+- Support GitHub Sponsors
+- Documentation complète (README, QUICKSTART, INSTALLATION)
 
 ### Sécurité
 - Échappement JSON sécurisé des props React

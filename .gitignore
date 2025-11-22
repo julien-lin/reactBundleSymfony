@@ -31,3 +31,6 @@ npm-debug.log*
 # Environment
 .env
 .env.local
+
+# Documentation interne (non publiée)
+PUBLICATION.md

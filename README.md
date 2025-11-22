@@ -5,10 +5,13 @@ Bundle Symfony indépendant permettant d'intégrer React avec Vite dans vos temp
 [![GitHub](https://img.shields.io/github/license/julien-lin/reactBundleSymfony)](https://github.com/julien-lin/reactBundleSymfony)
 [![PHP Version](https://img.shields.io/badge/php-%3E%3D8.2-blue)](https://www.php.net/)
 [![Symfony](https://img.shields.io/badge/symfony-6.0%20%7C%207.0-green)](https://symfony.com/)
+[![GitHub Sponsors](https://img.shields.io/github/sponsors/julien-lin?logo=github&color=ea4aaa)](https://github.com/sponsors/julien-lin)
+
+## 💝 Soutenir le projet
+
+Si ce bundle vous est utile, envisagez de [devenir sponsor](https://github.com/sponsors/julien-lin) pour soutenir le développement et la maintenance de ce projet open source.
 
 ## 📦 Installation
-
-## Installation
 
 ### Via Composer
 
@@ -125,6 +128,8 @@ Vous pouvez définir `VITE_SERVER_URL` dans votre `.env` pour personnaliser l'UR
 
 - Documentation complète : voir `QUICKSTART.md`
 - Guide d'installation : voir `INSTALLATION.md`
+- Signaler un bug : [GitHub Issues](https://github.com/julien-lin/reactBundleSymfony/issues)
+- Devenir sponsor : [GitHub Sponsors](https://github.com/sponsors/julien-lin)
 
 ## Licence
 

@@ -42,7 +42,8 @@
     },
     "support": {
         "issues": "https://github.com/julien-lin/reactBundleSymfony/issues",
-        "source": "https://github.com/julien-lin/reactBundleSymfony"
+        "source": "https://github.com/julien-lin/reactBundleSymfony",
+        "funding": "https://github.com/sponsors/julien-lin"
     },
     "scripts": {
         "post-install-cmd": [
