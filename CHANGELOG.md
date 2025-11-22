@@ -7,6 +7,14 @@ et ce projet adhère au [Semantic Versioning](https://semver.org/spec/v2.0.0.htm
 
 ## [Unreleased]
 
+## [1.0.6] - 2025-01-XX
+
+### Corrigé
+- Correction du calcul du projet root : remonter de 3 niveaux depuis vendor/ au lieu de 2
+- Support du manifest dans `.vite/manifest.json` (structure Vite standard)
+- Priorité au build de production si le manifest existe (même en mode dev)
+- Amélioration de la détection du manifest avec fallback
+
 ## [1.0.5] - 2025-01-XX
 
 ### Corrigé
