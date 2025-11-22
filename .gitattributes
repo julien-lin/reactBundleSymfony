@@ -1,0 +1,28 @@
+# Auto detect text files and perform LF normalization
+* text=auto
+
+# Source files
+*.php text diff=php
+*.js text diff=javascript
+*.jsx text diff=javascript
+*.json text
+*.yaml text
+*.yml text
+*.md text
+*.twig text
+*.html text
+*.css text
+
+# Binary files
+*.png binary
+*.jpg binary
+*.jpeg binary
+*.gif binary
+*.ico binary
+*.svg binary
+
+# Exclude from export
+.gitattributes export-ignore
+.gitignore export-ignore
+.github export-ignore
+

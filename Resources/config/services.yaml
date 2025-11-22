@@ -1,0 +1,28 @@
+services:
+    _defaults:
+        autowire: true
+        autoconfigure: true
+
+    ReactBundle\:
+        resource: '../../src/*'
+        exclude:
+            - '../../src/DependencyInjection'
+            - '../../src/ReactBundle.php'
+            - '../../src/Composer'
+
+    ReactBundle\Service\ReactRenderer:
+        arguments:
+            $twig: '@twig'
+            $buildDir: '%react_bundle.build_dir%'
+
+    ReactBundle\Twig\ReactExtension:
+        tags:
+            - { name: twig.extension }
+
+    ReactBundle\Twig\ViteExtension:
+        arguments:
+            $isDev: '%kernel.debug%'
+            $viteServer: 'http://localhost:3000'
+            $buildDir: '%react_bundle.build_dir%'
+        tags:
+            - { name: twig.extension }

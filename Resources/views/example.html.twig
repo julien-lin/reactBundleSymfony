@@ -1,0 +1,28 @@
+{# Exemple d'utilisation du bundle React #}
+{% extends '@ReactBundle/react_base.html.twig' %}
+
+{% block title %}Exemple React Component{% endblock %}
+
+{% block body %}
+    <div class="container">
+        <h1>Exemple d'utilisation de React dans Symfony</h1>
+        
+        {# Rendre un composant React avec des props #}
+        {{ react_component('ExampleComponent', {
+            title: 'Mon titre personnalisé',
+            message: 'Ceci est un message depuis Symfony !',
+            onClick: '() => alert("Clic détecté !")'
+        }) }}
+        
+        {# Autre exemple avec un ID personnalisé #}
+        {{ react_component('ExampleComponent', {
+            title: 'Deuxième composant',
+            message: 'Un autre composant sur la même page'
+        }, 'my-custom-id') }}
+    </div>
+{% endblock %}
+
+{% block javascripts %}
+    {{ vite_entry_script_tags('app') }}
+{% endblock %}
+
