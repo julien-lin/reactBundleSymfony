@@ -4,6 +4,7 @@
     "description": "Bundle Symfony pour intégrer React avec Vite, remplaçant Stimulus",
     "keywords": ["symfony", "bundle", "react", "vite", "twig"],
     "license": "MIT",
+    "version": "1.0.8",
     "authors": [
         {
             "name": "Julien Lin",
