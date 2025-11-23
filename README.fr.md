@@ -7,7 +7,7 @@ Bundle Symfony indépendant permettant d'intégrer React avec Vite dans vos temp
 [![Symfony](https://img.shields.io/badge/symfony-6.0%20%7C%207.0-green)](https://symfony.com/)
 [![GitHub Sponsors](https://img.shields.io/github/sponsors/julien-lin?logo=github&color=ea4aaa)](https://github.com/sponsors/julien-lin)
 
-**Available languages :** [🇬🇧 English](README.md) | [🇫🇷 Français](README.fr.md)
+**Langues disponibles :** [🇬🇧 English](README.md) | [🇫🇷 Français](README.fr.md)
 
 ## 💝 Soutenir le projet
 
@@ -403,3 +403,4 @@ react:
 ## Licence
 
 MIT
+
