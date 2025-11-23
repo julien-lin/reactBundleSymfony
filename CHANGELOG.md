@@ -7,6 +7,24 @@ et ce projet adhère au [Semantic Versioning](https://semver.org/spec/v2.0.0.htm
 
 ## [Unreleased]
 
+## [1.0.8] - 2025-11-23
+
+### Corrigé
+- Correction critique de l'encodage JSON des props dans les attributs HTML
+- Utilisation de guillemets simples pour l'attribut `data-react-props` afin de préserver les guillemets doubles du JSON
+- Échappement correct des caractères HTML tout en préservant la validité du JSON
+- Les composants React reçoivent maintenant correctement leurs props depuis Twig
+
+### Ajouté
+- Guide complet pour ajouter des packages npm (`ADDING_NPM_PACKAGES.md`)
+- Support multilingue pour la documentation (README.md en anglais, README.fr.md en français)
+- Exemples d'utilisation avec `react-icons` et autres packages npm populaires
+
+### Amélioré
+- Documentation README améliorée avec guide détaillé pour créer des composants React
+- Section "Adding npm Packages" dans le README
+- Workflow visuel pour la création de composants
+
 ## [1.0.7] - 2025-11-23
 
 ### Ajouté

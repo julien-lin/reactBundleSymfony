@@ -32,7 +32,8 @@ class ReactRenderer
 
         // Valider et échapper les props pour la sécurité
         try {
-            $escapedProps = json_encode($props, JSON_HEX_TAG | JSON_HEX_AMP | JSON_HEX_APOS | JSON_HEX_QUOT | JSON_UNESCAPED_UNICODE);
+            // Encoder en JSON normal (sans flags d'échappement HTML)
+            $jsonProps = json_encode($props, JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES);
             
             if (json_last_error() !== JSON_ERROR_NONE) {
                 throw new \RuntimeException(
@@ -43,6 +44,16 @@ class ReactRenderer
                     )
                 );
             }
+            
+            // Échapper pour un attribut HTML avec guillemets simples
+            // On échappe seulement les guillemets simples (car l'attribut utilise des guillemets simples)
+            // et les caractères HTML dangereux (&, <, >)
+            // Les guillemets doubles dans le JSON seront préservés car l'attribut utilise des guillemets simples
+            $escapedProps = str_replace(
+                ['&', '<', '>', "'"],
+                ['&amp;', '&lt;', '&gt;', '&#39;'],
+                $jsonProps
+            );
         } catch (\Exception $e) {
             // En cas d'erreur, utiliser un objet vide et logger l'erreur
             error_log(sprintf(

@@ -393,10 +393,32 @@ react:
 - If you encounter problems, check folder permissions
 - Make sure paths in `vite.config.js` are correct
 
+## Adding npm Packages
+
+To add npm packages (like `react-icons`, `axios`, etc.) to your project:
+
+1. Install the package in your **Symfony project root** (not in the bundle):
+   ```bash
+   npm install react-icons
+   ```
+
+2. Import and use it in your components:
+   ```jsx
+   import { FaGithub } from 'react-icons/fa';
+   ```
+
+3. Rebuild assets:
+   ```bash
+   php bin/console react:build
+   ```
+
+📖 **Full guide**: See [ADDING_NPM_PACKAGES.md](ADDING_NPM_PACKAGES.md) for detailed instructions and examples.
+
 ## Support
 
 - Complete documentation: see `QUICKSTART.md`
 - Installation guide: see `INSTALLATION.md`
+- Adding npm packages: see `ADDING_NPM_PACKAGES.md`
 - Report a bug: [GitHub Issues](https://github.com/julien-lin/reactBundleSymfony/issues)
 - Become a sponsor: [GitHub Sponsors](https://github.com/sponsors/julien-lin)
 
