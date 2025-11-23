@@ -30,8 +30,28 @@ class ReactRenderer
             $id = 'react-component-' . ++self::$componentCounter . '-' . uniqid();
         }
 
-        // Échapper les props pour la sécurité
-        $escapedProps = json_encode($props, JSON_HEX_TAG | JSON_HEX_AMP | JSON_HEX_APOS | JSON_HEX_QUOT);
+        // Valider et échapper les props pour la sécurité
+        try {
+            $escapedProps = json_encode($props, JSON_HEX_TAG | JSON_HEX_AMP | JSON_HEX_APOS | JSON_HEX_QUOT | JSON_UNESCAPED_UNICODE);
+            
+            if (json_last_error() !== JSON_ERROR_NONE) {
+                throw new \RuntimeException(
+                    sprintf(
+                        'Erreur lors de l\'encodage JSON des props pour le composant "%s": %s',
+                        $componentName,
+                        json_last_error_msg()
+                    )
+                );
+            }
+        } catch (\Exception $e) {
+            // En cas d'erreur, utiliser un objet vide et logger l'erreur
+            error_log(sprintf(
+                'ReactBundle: Erreur lors du rendu du composant "%s": %s',
+                $componentName,
+                $e->getMessage()
+            ));
+            $escapedProps = '{}';
+        }
 
         return $this->twig->render('@React/react_component.html.twig', [
             'component_id' => $id,

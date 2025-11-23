@@ -122,7 +122,47 @@ react:
 
 ### Variables d'environnement
 
-Vous pouvez définir `VITE_SERVER_URL` dans votre `.env` pour personnaliser l'URL du serveur Vite en développement.
+Vous pouvez définir `VITE_SERVER_URL` dans votre `.env` pour personnaliser l'URL du serveur Vite en développement :
+
+```env
+VITE_SERVER_URL=http://localhost:5173
+```
+
+Ou dans `config/packages/react.yaml` :
+
+```yaml
+react:
+    vite_server: 'http://localhost:5173'
+```
+
+### Dépannage
+
+#### Les composants ne s'affichent pas
+- Vérifiez que `{{ vite_entry_script_tags('app') }}` est présent dans votre template
+- Vérifiez la console du navigateur pour les erreurs JavaScript
+- Assurez-vous que les assets sont compilés : `php bin/console react:build`
+- Vérifiez que le manifest.json existe dans `public/build/.vite/`
+
+#### Erreur "Component not found"
+- Vérifiez que le composant est exporté dans `React/index.js` (ou `assets/React/index.js` si vous utilisez votre propre structure)
+- Vérifiez que le composant est ajouté dans le `componentMap` dans `app.jsx`
+- Vérifiez l'orthographe du nom du composant dans Twig (sensible à la casse)
+
+#### HMR ne fonctionne pas
+- Vérifiez que le serveur Vite est démarré : `php bin/console react:build --dev`
+- Vérifiez que le port 3000 (ou celui configuré) n'est pas utilisé
+- Vérifiez la configuration dans `vite.config.js`
+- Vérifiez que `VITE_SERVER_URL` est correctement configuré
+
+#### Erreurs npm/Node.js
+- Vérifiez que Node.js >= 18.0.0 est installé : `node --version`
+- Vérifiez que npm est installé : `npm --version`
+- Si vous utilisez nvm, assurez-vous que l'environnement est correctement chargé
+
+#### Erreurs de chemin (Windows)
+- Le bundle supporte maintenant Windows avec `DIRECTORY_SEPARATOR`
+- Si vous rencontrez des problèmes, vérifiez les permissions des dossiers
+- Assurez-vous que les chemins dans `vite.config.js` sont corrects
 
 ## Support
 

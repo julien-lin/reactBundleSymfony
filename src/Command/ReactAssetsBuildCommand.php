@@ -31,22 +31,33 @@ class ReactAssetsBuildCommand extends Command
         $watch = $input->getOption('watch');
         $dev = $input->getOption('dev');
 
-        // Chemin vers le bundle (depuis vendor/ ou src/)
+        // Détecter si le projet a son propre vite.config.js
         $bundlePath = $this->getBundlePath();
+        $projectRoot = $this->getProjectRoot($bundlePath);
+        $projectViteConfig = $projectRoot . DIRECTORY_SEPARATOR . 'vite.config.js';
+        $projectPackageJson = $projectRoot . DIRECTORY_SEPARATOR . 'package.json';
+        
+        // Si le projet a son propre vite.config.js, utiliser celui-ci
+        if (file_exists($projectViteConfig) && file_exists($projectPackageJson)) {
+            $io->info('Configuration Vite du projet détectée, utilisation de celle-ci.');
+            $workingPath = $projectRoot;
+        } else {
+            $workingPath = $bundlePath;
+        }
 
         // Vérifier que node_modules existe, sinon proposer de l'installer
-        if (!is_dir($bundlePath . '/node_modules')) {
+        if (!is_dir($workingPath . DIRECTORY_SEPARATOR . 'node_modules')) {
             $io->warning('Les dépendances npm ne sont pas installées.');
             if ($io->confirm('Voulez-vous les installer maintenant ?', true)) {
                 $npmPath = $this->findNpm();
                 if (!$npmPath) {
-                    $io->error('npm n\'a pas pu être trouvé. Veuillez installer Node.js et npm, ou installer les dépendances manuellement avec: cd ' . $bundlePath . ' && npm install');
+                    $io->error('npm n\'a pas pu être trouvé. Veuillez installer Node.js et npm, ou installer les dépendances manuellement avec: cd ' . $workingPath . ' && npm install');
                     return Command::FAILURE;
                 }
 
                 $io->info('Installation des dépendances npm...');
                 $installCommand = $this->prepareInstallCommand($npmPath);
-                $installProcess = new Process($installCommand, $bundlePath);
+                $installProcess = new Process($installCommand, $workingPath);
                 $installProcess->setTimeout(600);
                 
                 // Si npm est dans nvm, définir les variables d'environnement
@@ -66,11 +77,11 @@ class ReactAssetsBuildCommand extends Command
                     $io->success('Dépendances npm installées avec succès !');
                 } catch (\Exception $e) {
                     $io->error('Erreur lors de l\'installation npm: ' . $e->getMessage());
-                    $io->note('Vous pouvez installer manuellement avec: cd ' . $bundlePath . ' && npm install');
+                    $io->note('Vous pouvez installer manuellement avec: cd ' . $workingPath . ' && npm install');
                     return Command::FAILURE;
                 }
             } else {
-                $io->note('Vous pouvez installer les dépendances manuellement avec: cd ' . $bundlePath . ' && npm install');
+                $io->note('Vous pouvez installer les dépendances manuellement avec: cd ' . $workingPath . ' && npm install');
                 return Command::FAILURE;
             }
         }
@@ -83,12 +94,15 @@ class ReactAssetsBuildCommand extends Command
             return Command::FAILURE;
         }
 
+        // Vérifier la version de Node.js
+        $this->checkNodeVersion($io, $npmPath);
+
         // Si npm est dans nvm, charger l'environnement nvm
         $command = $this->prepareNpmCommand($npmPath, $watch, $dev);
 
         $process = new Process($command);
         $process->setTimeout(null);
-        $process->setWorkingDirectory($bundlePath);
+        $process->setWorkingDirectory($workingPath);
         
         // Si npm est dans nvm, définir les variables d'environnement nécessaires
         if (strpos($npmPath, '.nvm') !== false) {
@@ -100,7 +114,7 @@ class ReactAssetsBuildCommand extends Command
             ]);
         }
 
-        $io->note('Exécution de: ' . implode(' ', $command) . ' dans ' . $bundlePath);
+        $io->note('Exécution de: ' . implode(' ', $command) . ' dans ' . $workingPath);
 
         try {
             $process->mustRun(function ($type, $buffer) use ($output) {
@@ -189,22 +203,39 @@ class ReactAssetsBuildCommand extends Command
         $reflection = new \ReflectionClass(\ReactBundle\ReactBundle::class);
         $bundlePath = dirname($reflection->getFileName(), 2);
         
+        // Normaliser les séparateurs de chemin pour Windows
+        $bundlePath = str_replace(['\\', '/'], DIRECTORY_SEPARATOR, $bundlePath);
+        
         // Si le bundle est dans vendor/, vérifier que c'est bien le bon chemin
-        if (strpos($bundlePath, '/vendor/') !== false) {
+        $vendorSeparator = DIRECTORY_SEPARATOR . 'vendor' . DIRECTORY_SEPARATOR;
+        if (strpos($bundlePath, $vendorSeparator) !== false) {
             // Vérifier que package.json existe pour confirmer que c'est le bon chemin
-            if (file_exists($bundlePath . '/package.json')) {
+            if (file_exists($bundlePath . DIRECTORY_SEPARATOR . 'package.json')) {
                 return $bundlePath;
             }
         }
         
         // Sinon, on est dans le développement local (src/ReactBundle)
         // Vérifier que package.json existe
-        if (file_exists($bundlePath . '/package.json')) {
+        if (file_exists($bundlePath . DIRECTORY_SEPARATOR . 'package.json')) {
             return $bundlePath;
         }
         
         // Fallback : remonter depuis le répertoire actuel
         return dirname(__DIR__, 2);
+    }
+
+    /**
+     * Calcule le chemin racine du projet Symfony
+     */
+    private function getProjectRoot(string $bundlePath): string
+    {
+        // Si dans vendor/, remonter de 3 niveaux pour atteindre la racine du projet
+        if (strpos($bundlePath, '/vendor/') !== false) {
+            return dirname($bundlePath, 3);
+        }
+        // Sinon, on est dans src/ReactBundle, remonter de 2 niveaux
+        return dirname($bundlePath, 2);
     }
 
     /**
@@ -262,5 +293,61 @@ class ReactAssetsBuildCommand extends Command
 
         return [$npmPath, 'install'];
     }
-}
+
+    /**
+     * Vérifie la version de Node.js et affiche un avertissement si nécessaire
+     */
+    private function checkNodeVersion(SymfonyStyle $io, string $npmPath): void
+    {
+        try {
+            // Trouver node (généralement dans le même répertoire que npm)
+            $nodePath = dirname($npmPath) . DIRECTORY_SEPARATOR . 'node';
+            if (!file_exists($nodePath) || !is_executable($nodePath)) {
+                // Essayer 'node' dans le PATH
+                $nodeProcess = new Process(['node', '--version']);
+                $nodeProcess->run();
+                if (!$nodeProcess->isSuccessful()) {
+                    return; // Ne pas bloquer si on ne peut pas vérifier
+                }
+                $version = trim($nodeProcess->getOutput());
+            } else {
+                $nodeProcess = new Process([$nodePath, '--version']);
+                $nodeProcess->run();
+                if (!$nodeProcess->isSuccessful()) {
+                    return;
+                }
+                $version = trim($nodeProcess->getOutput());
+            }
+
+            // Extraire le numéro de version (ex: v18.17.0 -> 18.17.0)
+            $version = ltrim($version, 'v');
+            $majorVersion = (int) explode('.', $version)[0];
+
+            if ($majorVersion < 18) {
+                $io->warning(sprintf(
+                    'Node.js version %s détectée. Version recommandée: >= 18.0.0. Certaines fonctionnalités peuvent ne pas fonctionner correctement.',
+                    $version
+                ));
+            }
+        } catch (\Exception $e) {
+            // Ignorer les erreurs de vérification de version
+        }
+    }
+
+    /**
+     * Calcule le chemin racine du projet Symfony
+     */
+    private function getProjectRoot(string $bundlePath): string
+    {
+        // Normaliser les séparateurs de chemin
+        $bundlePath = str_replace(['\\', '/'], DIRECTORY_SEPARATOR, $bundlePath);
+        
+        // Si dans vendor/, remonter de 3 niveaux pour atteindre la racine du projet
+        $vendorSeparator = DIRECTORY_SEPARATOR . 'vendor' . DIRECTORY_SEPARATOR;
+        if (strpos($bundlePath, $vendorSeparator) !== false) {
+            return dirname($bundlePath, 3);
+        }
+        // Sinon, on est dans src/ReactBundle, remonter de 2 niveaux
+        return dirname($bundlePath, 2);
+    }
 

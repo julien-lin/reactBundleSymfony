@@ -14,14 +14,15 @@ class ScriptHandler
     {
         $io = $event->getIO();
         $bundlePath = __DIR__ . '/../../..';
+        $bundlePath = str_replace(['\\', '/'], DIRECTORY_SEPARATOR, $bundlePath);
 
-        if (!file_exists($bundlePath . '/package.json')) {
+        if (!file_exists($bundlePath . DIRECTORY_SEPARATOR . 'package.json')) {
             $io->write('<error>package.json non trouvé dans le bundle</error>');
             return;
         }
 
         // Si node_modules existe déjà, ne rien faire
-        if (is_dir($bundlePath . '/node_modules')) {
+        if (is_dir($bundlePath . DIRECTORY_SEPARATOR . 'node_modules')) {
             $io->write('<info>Les dépendances npm sont déjà installées.</info>');
             return;
         }
