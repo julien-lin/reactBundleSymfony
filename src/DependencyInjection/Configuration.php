@@ -21,6 +21,10 @@ class Configuration implements ConfigurationInterface
                     ->defaultValue('assets')
                     ->info('Répertoire source des assets React')
                 ->end()
+                ->scalarNode('vite_server')
+                    ->defaultValue('http://localhost:3000')
+                    ->info('URL du serveur Vite en développement (peut être surchargée par VITE_SERVER_URL)')
+                ->end()
             ->end();
 
         return $treeBuilder;

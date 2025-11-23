@@ -22,7 +22,7 @@ services:
     ReactBundle\Twig\ViteExtension:
         arguments:
             $isDev: '%kernel.debug%'
-            $viteServer: 'http://localhost:3000'
+            $viteServer: '%react.vite_server%'
             $buildDir: '%react.build_dir%'
         tags:
             - { name: twig.extension }

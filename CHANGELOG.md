@@ -7,6 +7,27 @@ et ce projet adhère au [Semantic Versioning](https://semver.org/spec/v2.0.0.htm
 
 ## [Unreleased]
 
+## [1.0.7] - 2025-11-23
+
+### Ajouté
+- Support de la variable d'environnement `VITE_SERVER_URL` pour personnaliser l'URL du serveur Vite
+- ErrorBoundary React pour gérer les erreurs de composants
+- Vérification automatique de la version Node.js (avertissement si < 18)
+- Validation et gestion d'erreur pour les props JSON
+- Support complet de Windows avec `DIRECTORY_SEPARATOR`
+- Prévention du double montage des composants React
+- Amélioration de la gestion des erreurs dans `ReactRenderer`
+
+### Corrigé
+- Gestion des chemins pour Windows (utilisation de `DIRECTORY_SEPARATOR`)
+- Détection du manifest dans `renderViteLinkTags` avec support des clés alternatives
+- Normalisation des chemins dans toutes les méthodes
+
+### Amélioré
+- Documentation complétée avec section dépannage détaillée
+- Messages d'erreur plus explicites
+- Gestion d'erreur plus robuste dans tous les composants
+
 ## [1.0.6] - 2025-01-XX
 
 ### Corrigé
