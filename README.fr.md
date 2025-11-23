@@ -9,6 +9,8 @@ Bundle Symfony indépendant permettant d'intégrer React avec Vite dans vos temp
 
 **Langues disponibles :** [🇬🇧 English](README.md) | [🇫🇷 Français](README.fr.md)
 
+> 📖 **Reading in English?** [Click here for the English documentation](README.md)
+
 ## 💝 Soutenir le projet
 
 Si ce bundle vous est utile, envisagez de [devenir sponsor](https://github.com/sponsors/julien-lin) pour soutenir le développement et la maintenance de ce projet open source.

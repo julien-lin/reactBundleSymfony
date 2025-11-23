@@ -1,6 +1,6 @@
-# ReactBundle - Bundle Symfony pour React
+# ReactBundle - Symfony Bundle for React
 
-Bundle Symfony indépendant permettant d'intégrer React avec Vite dans vos templates Twig, remplaçant Stimulus.
+Independent Symfony bundle that allows you to integrate React with Vite into your Twig templates, replacing Stimulus.
 
 [![GitHub](https://img.shields.io/github/license/julien-lin/reactBundleSymfony)](https://github.com/julien-lin/reactBundleSymfony)
 [![PHP Version](https://img.shields.io/badge/php-%3E%3D8.2-blue)](https://www.php.net/)
@@ -9,9 +9,9 @@ Bundle Symfony indépendant permettant d'intégrer React avec Vite dans vos temp
 
 **Available languages :** [🇬🇧 English](README.md) | [🇫🇷 Français](README.fr.md)
 
-## 💝 Soutenir le projet
+## 💝 Support the project
 
-Si ce bundle vous est utile, envisagez de [devenir sponsor](https://github.com/sponsors/julien-lin) pour soutenir le développement et la maintenance de ce projet open source.
+If this bundle is useful to you, consider [becoming a sponsor](https://github.com/sponsors/julien-lin) to support the development and maintenance of this open source project.
 
 ## 📦 Installation
 
@@ -21,86 +21,86 @@ Si ce bundle vous est utile, envisagez de [devenir sponsor](https://github.com/s
 composer require julien-lin/react-bundle-symfony
 ```
 
-Le script d'installation Composer installera automatiquement les dépendances npm.
+The Composer installation script will automatically install npm dependencies.
 
 ### Configuration
 
-1. Le bundle s'enregistre automatiquement via Symfony Flex.
+1. The bundle registers automatically via Symfony Flex.
 
-2. Configurez le bundle dans `config/packages/react.yaml` :
+2. Configure the bundle in `config/packages/react.yaml`:
 ```yaml
 react:
     build_dir: 'build'
     assets_dir: 'assets'
 ```
 
-3. Si les dépendances npm n'ont pas été installées automatiquement :
+3. If npm dependencies were not automatically installed:
 ```bash
 cd vendor/julien-lin/react-bundle-symfony
 npm install
 ```
 
-4. Créez la structure de fichiers dans votre projet Symfony (si elle n'existe pas déjà) :
+4. Create the file structure in your Symfony project (if it doesn't already exist):
 
 ```bash
-# Créez le dossier pour vos composants React
+# Create the folder for your React components
 mkdir -p assets/React/Components
 
-# Créez le fichier index.js pour exporter vos composants
+# Create the index.js file to export your components
 touch assets/React/index.js
 ```
 
-5. Configurez `assets/React/index.js` (point d'entrée pour vos composants) :
+5. Configure `assets/React/index.js` (entry point for your components):
 
 ```javascript
 /**
- * Point d'entrée pour tous les composants React du projet
- * Exportez ici tous vos composants créés dans React/Components/
+ * Entry point for all React components in the project
+ * Export all your components created in React/Components/ here
  */
 
-// Exemple :
-// export { default as MonComposant } from './Components/MonComposant';
+// Example:
+// export { default as MyComponent } from './Components/MyComponent';
 
-// Ajoutez vos exports ici au fur et à mesure
+// Add your exports here as you go
 ```
 
-6. Configurez `assets/js/app.jsx` (doit importer depuis `../React`) :
+6. Configure `assets/js/app.jsx` (must import from `../React`):
 
 ```jsx
 import React from 'react';
 import { createRoot } from 'react-dom/client';
 
-// Import de tous vos composants depuis l'index
+// Import all your components from the index
 import * as ReactComponents from '../React';
 
-// ... reste du code (généralement déjà configuré)
+// ... rest of the code (usually already configured)
 ```
 
-## Utilisation
+## Usage
 
-### Prérequis : Structure des fichiers
+### Prerequisites: File Structure
 
-Avant d'utiliser le bundle, assurez-vous d'avoir la structure suivante dans votre projet Symfony :
+Before using the bundle, make sure you have the following structure in your Symfony project:
 
 ```
 assets/
 ├── React/
-│   ├── Components/          # Créez vos composants ici
-│   └── index.js             # Exportez vos composants ici
+│   ├── Components/          # Create your components here
+│   └── index.js             # Export your components here
 └── js/
-    └── app.jsx              # Point d'entrée (déjà configuré)
+    └── app.jsx              # Entry point (already configured)
 ```
 
-### Dans vos templates Twig
+### In your Twig templates
 
 ```twig
 {% extends '@React/react_base.html.twig' %}
 
 {% block body %}
-    {# Utilisez react_component avec le nom exact de votre composant #}
-    {{ react_component('MonComposant', {
-        title: 'Mon titre',
-        message: 'Mon message',
+    {# Use react_component with the exact name of your component #}
+    {{ react_component('MyComponent', {
+        title: 'My title',
+        message: 'My message',
         count: 42,
         items: ['item1', 'item2']
     }) }}
@@ -111,11 +111,11 @@ assets/
 {% endblock %}
 ```
 
-**Important** : Le nom du composant dans `react_component()` doit correspondre exactement au nom utilisé dans l'export de `assets/React/index.js`.
+**Important**: The component name in `react_component()` must match exactly the name used in the export of `assets/React/index.js`.
 
-### Build des assets
+### Build assets
 
-#### Développement avec HMR
+#### Development with HMR
 ```bash
 php bin/console react:build --dev
 ```
@@ -125,67 +125,67 @@ php bin/console react:build --dev
 php bin/console react:build
 ```
 
-## Structure du bundle
+## Bundle structure
 
 ```
 ReactBundle/
 ├── src/
-│   ├── ReactBundle.php              # Classe principale
+│   ├── ReactBundle.php              # Main class
 │   ├── DependencyInjection/         # Configuration
 │   ├── Service/                     # Services
-│   ├── Twig/                        # Extensions Twig
-│   ├── Command/                     # Commandes Symfony
-│   └── Composer/                    # Scripts Composer
+│   ├── Twig/                        # Twig extensions
+│   ├── Command/                     # Symfony commands
+│   └── Composer/                    # Composer scripts
 ├── Resources/
 │   ├── config/
 │   │   └── services.yaml
-│   └── views/                       # Templates Twig
+│   └── views/                       # Twig templates
 ├── composer.json
 ├── package.json
 └── vite.config.js
 ```
 
-## Structure recommandée dans votre projet Symfony
+## Recommended structure in your Symfony project
 
-Créez vos composants React **dans votre projet Symfony**, pas dans le bundle :
+Create your React components **in your Symfony project**, not in the bundle:
 
 ```
-votre-projet-symfony/
+your-symfony-project/
 ├── assets/
 │   ├── React/
-│   │   ├── Components/              # Vos composants React ici
+│   │   ├── Components/              # Your React components here
 │   │   │   ├── MyComponent.jsx
 │   │   │   ├── Navbar.jsx
 │   │   │   └── ...
-│   │   └── index.js                 # Export centralisé de tous les composants
+│   │   └── index.js                 # Centralized export of all components
 │   └── js/
-│       └── app.jsx                  # Point d'entrée (importe depuis React/)
+│       └── app.jsx                  # Entry point (imports from React/)
 ├── public/
-│   └── build/                       # Assets compilés par Vite
+│   └── build/                       # Assets compiled by Vite
 └── config/
     └── packages/
-        └── react.yaml               # Configuration du bundle
+        └── react.yaml               # Bundle configuration
 ```
 
-## Créer un nouveau composant React
+## Create a new React component
 
-### Workflow rapide
+### Quick workflow
 
 ```
-1. Créer le fichier          → assets/React/Components/MonComposant.jsx
-2. Exporter dans index.js    → assets/React/index.js
-3. Rebuild les assets        → php bin/console react:build
-4. Utiliser dans Twig        → {{ react_component('MonComposant', {...}) }}
+1. Create the file          → assets/React/Components/MyComponent.jsx
+2. Export in index.js       → assets/React/index.js
+3. Rebuild assets           → php bin/console react:build
+4. Use in Twig              → {{ react_component('MyComponent', {...}) }}
 ```
 
-### Étape 1 : Créer le fichier du composant
+### Step 1: Create the component file
 
-Créez votre composant dans `assets/React/Components/VotreComposant.jsx` :
+Create your component in `assets/React/Components/YourComponent.jsx`:
 
 ```jsx
 import React from 'react';
 
-const VotreComposant = ({ title, message, onAction }) => {
+const YourComponent = ({ title, message, onAction }) => {
     return (
         <div style={{ padding: '20px', border: '1px solid #ccc' }}>
             <h2>{title}</h2>
@@ -197,34 +197,34 @@ const VotreComposant = ({ title, message, onAction }) => {
     );
 };
 
-export default VotreComposant;
+export default YourComponent;
 ```
 
-### Étape 2 : Exporter le composant dans `index.js`
+### Step 2: Export the component in `index.js`
 
-Ajoutez l'export dans `assets/React/index.js` :
+Add the export in `assets/React/index.js`:
 
 ```javascript
-// ... autres exports existants
+// ... other existing exports
 
-// Votre nouveau composant
-export { default as VotreComposant } from './Components/VotreComposant';
+// Your new component
+export { default as YourComponent } from './Components/YourComponent';
 ```
 
-**Important** : Le nom utilisé dans l'export (`VotreComposant`) doit correspondre exactement au nom que vous utiliserez dans Twig.
+**Important**: The name used in the export (`YourComponent`) must match exactly the name you will use in Twig.
 
-### Étape 3 : Utiliser le composant dans un template Twig
+### Step 3: Use the component in a Twig template
 
-Dans votre template Twig :
+In your Twig template:
 
 ```twig
 {% extends '@React/react_base.html.twig' %}
 
 {% block body %}
-    {# Utilisez le nom exact de l'export #}
-    {{ react_component('VotreComposant', {
-        title: 'Mon titre',
-        message: 'Mon message personnalisé'
+    {# Use the exact export name #}
+    {{ react_component('YourComponent', {
+        title: 'My title',
+        message: 'My personalized message'
     }) }}
 {% endblock %}
 
@@ -233,21 +233,21 @@ Dans votre template Twig :
 {% endblock %}
 ```
 
-### Étape 4 : Rebuild les assets
+### Step 4: Rebuild assets
 
-Après avoir créé ou modifié un composant :
+After creating or modifying a component:
 
 ```bash
-# En développement (avec HMR)
+# In development (with HMR)
 php bin/console react:build --dev
 
-# En production
+# In production
 php bin/console react:build
 ```
 
-## Exemple complet
+## Complete example
 
-### 1. Créer `assets/React/Components/ProductCard.jsx`
+### 1. Create `assets/React/Components/ProductCard.jsx`
 
 ```jsx
 import React from 'react';
@@ -267,7 +267,7 @@ const ProductCard = ({ name, price, image, onAddToCart }) => {
             />
             <h3>{name}</h3>
             <p style={{ fontSize: '1.5rem', fontWeight: 'bold', color: '#ff6b6b' }}>
-                {price} €
+                ${price}
             </p>
             <button 
                 onClick={onAddToCart}
@@ -280,7 +280,7 @@ const ProductCard = ({ name, price, image, onAddToCart }) => {
                     cursor: 'pointer'
                 }}
             >
-                Ajouter au panier
+                Add to cart
             </button>
         </div>
     );
@@ -289,15 +289,15 @@ const ProductCard = ({ name, price, image, onAddToCart }) => {
 export default ProductCard;
 ```
 
-### 2. Exporter dans `assets/React/index.js`
+### 2. Export in `assets/React/index.js`
 
 ```javascript
-// ... autres exports
+// ... other exports
 
 export { default as ProductCard } from './Components/ProductCard';
 ```
 
-### 3. Utiliser dans Twig
+### 3. Use in Twig
 
 ```twig
 {% extends '@React/react_base.html.twig' %}
@@ -309,7 +309,7 @@ export { default as ProductCard } from './Components/ProductCard';
                 name: product.name,
                 price: product.price,
                 image: product.image,
-                onAddToCart: '() => alert("Ajouté au panier!")'
+                onAddToCart: '() => alert("Added to cart!")'
             }) }}
         {% endfor %}
     </div>
@@ -320,86 +320,86 @@ export { default as ProductCard } from './Components/ProductCard';
 {% endblock %}
 ```
 
-### Notes importantes
+### Important notes
 
-- ✅ **Créez vos composants dans `assets/React/Components/`** (dans votre projet, pas dans le bundle)
-- ✅ **Exportez-les dans `assets/React/index.js`** avec le nom exact que vous utiliserez dans Twig
-- ✅ **Le nom est sensible à la casse** : `ProductCard` ≠ `productcard` ≠ `Productcard`
-- ✅ **Les props sont passées en JSON** : utilisez des types simples (string, number, boolean, array, object)
-- ✅ **Les fonctions JavaScript** peuvent être passées comme chaînes (ex: `'() => alert("test")'`)
-- ✅ **Rebuild après chaque modification** : `php bin/console react:build` (ou `--dev` pour HMR)
+- ✅ **Create your components in `assets/React/Components/`** (in your project, not in the bundle)
+- ✅ **Export them in `assets/React/index.js`** with the exact name you will use in Twig
+- ✅ **Name is case-sensitive**: `ProductCard` ≠ `productcard` ≠ `Productcard`
+- ✅ **Props are passed as JSON**: use simple types (string, number, boolean, array, object)
+- ✅ **JavaScript functions** can be passed as strings (e.g., `'() => alert("test")'`)
+- ✅ **Rebuild after each modification**: `php bin/console react:build` (or `--dev` for HMR)
 
-## Migration depuis Stimulus
+## Migration from Stimulus
 
-1. Identifiez vos contrôleurs Stimulus
-2. Créez des composants React équivalents
-3. Remplacez `data-controller="..."` par `{{ react_component(...) }}`
-4. Testez individuellement
+1. Identify your Stimulus controllers
+2. Create equivalent React components
+3. Replace `data-controller="..."` with `{{ react_component(...) }}`
+4. Test individually
 
-## Configuration avancée
+## Advanced configuration
 
-### Personnaliser le serveur Vite
+### Customize Vite server
 
-Dans `config/packages/react.yaml` :
+In `config/packages/react.yaml`:
 ```yaml
 react:
     build_dir: 'build'
     assets_dir: 'assets'
 ```
 
-### Variables d'environnement
+### Environment variables
 
-Vous pouvez définir `VITE_SERVER_URL` dans votre `.env` pour personnaliser l'URL du serveur Vite en développement :
+You can define `VITE_SERVER_URL` in your `.env` to customize the Vite server URL in development:
 
 ```env
 VITE_SERVER_URL=http://localhost:5173
 ```
 
-Ou dans `config/packages/react.yaml` :
+Or in `config/packages/react.yaml`:
 
 ```yaml
 react:
     vite_server: 'http://localhost:5173'
 ```
 
-### Dépannage
+### Troubleshooting
 
-#### Les composants ne s'affichent pas
-- Vérifiez que `{{ vite_entry_script_tags('app') }}` est présent dans votre template
-- Vérifiez la console du navigateur pour les erreurs JavaScript
-- Assurez-vous que les assets sont compilés : `php bin/console react:build`
-- Vérifiez que le manifest.json existe dans `public/build/.vite/`
+#### Components are not displaying
+- Check that `{{ vite_entry_script_tags('app') }}` is present in your template
+- Check the browser console for JavaScript errors
+- Make sure assets are compiled: `php bin/console react:build`
+- Check that manifest.json exists in `public/build/.vite/`
 
-#### Erreur "Component not found"
-- Vérifiez que le composant est exporté dans `assets/React/index.js` de votre projet Symfony
-- Vérifiez que le nom dans l'export correspond exactement au nom utilisé dans Twig (sensible à la casse)
-- Vérifiez que le fichier du composant existe dans `assets/React/Components/`
-- Vérifiez que vous avez rebuild les assets : `php bin/console react:build`
-- Consultez la console du navigateur pour voir la liste des composants disponibles
+#### "Component not found" error
+- Check that the component is exported in `assets/React/index.js` of your Symfony project
+- Check that the name in the export matches exactly the name used in Twig (case-sensitive)
+- Check that the component file exists in `assets/React/Components/`
+- Check that you have rebuilt the assets: `php bin/console react:build`
+- Check the browser console to see the list of available components
 
-#### HMR ne fonctionne pas
-- Vérifiez que le serveur Vite est démarré : `php bin/console react:build --dev`
-- Vérifiez que le port 3000 (ou celui configuré) n'est pas utilisé
-- Vérifiez la configuration dans `vite.config.js`
-- Vérifiez que `VITE_SERVER_URL` est correctement configuré
+#### HMR is not working
+- Check that the Vite server is started: `php bin/console react:build --dev`
+- Check that port 3000 (or the configured one) is not in use
+- Check the configuration in `vite.config.js`
+- Check that `VITE_SERVER_URL` is correctly configured
 
-#### Erreurs npm/Node.js
-- Vérifiez que Node.js >= 18.0.0 est installé : `node --version`
-- Vérifiez que npm est installé : `npm --version`
-- Si vous utilisez nvm, assurez-vous que l'environnement est correctement chargé
+#### npm/Node.js errors
+- Check that Node.js >= 18.0.0 is installed: `node --version`
+- Check that npm is installed: `npm --version`
+- If you use nvm, make sure the environment is correctly loaded
 
-#### Erreurs de chemin (Windows)
-- Le bundle supporte maintenant Windows avec `DIRECTORY_SEPARATOR`
-- Si vous rencontrez des problèmes, vérifiez les permissions des dossiers
-- Assurez-vous que les chemins dans `vite.config.js` sont corrects
+#### Path errors (Windows)
+- The bundle now supports Windows with `DIRECTORY_SEPARATOR`
+- If you encounter problems, check folder permissions
+- Make sure paths in `vite.config.js` are correct
 
 ## Support
 
-- Documentation complète : voir `QUICKSTART.md`
-- Guide d'installation : voir `INSTALLATION.md`
-- Signaler un bug : [GitHub Issues](https://github.com/julien-lin/reactBundleSymfony/issues)
-- Devenir sponsor : [GitHub Sponsors](https://github.com/sponsors/julien-lin)
+- Complete documentation: see `QUICKSTART.md`
+- Installation guide: see `INSTALLATION.md`
+- Report a bug: [GitHub Issues](https://github.com/julien-lin/reactBundleSymfony/issues)
+- Become a sponsor: [GitHub Sponsors](https://github.com/sponsors/julien-lin)
 
-## Licence
+## License
 
 MIT
