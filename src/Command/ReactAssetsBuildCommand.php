@@ -226,19 +226,6 @@ class ReactAssetsBuildCommand extends Command
     }
 
     /**
-     * Calcule le chemin racine du projet Symfony
-     */
-    private function getProjectRoot(string $bundlePath): string
-    {
-        // Si dans vendor/, remonter de 3 niveaux pour atteindre la racine du projet
-        if (strpos($bundlePath, '/vendor/') !== false) {
-            return dirname($bundlePath, 3);
-        }
-        // Sinon, on est dans src/ReactBundle, remonter de 2 niveaux
-        return dirname($bundlePath, 2);
-    }
-
-    /**
      * Prépare la commande npm avec support nvm si nécessaire
      */
     private function prepareNpmCommand(string $npmPath, bool $watch, bool $dev): array
@@ -350,4 +337,5 @@ class ReactAssetsBuildCommand extends Command
         // Sinon, on est dans src/ReactBundle, remonter de 2 niveaux
         return dirname($bundlePath, 2);
     }
+}
 
