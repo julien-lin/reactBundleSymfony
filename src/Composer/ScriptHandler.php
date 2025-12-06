@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace ReactBundle\Composer;
 
 use Composer\Script\Event;

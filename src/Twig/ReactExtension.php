@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace ReactBundle\Twig;
 
 use ReactBundle\Service\ReactRenderer;
