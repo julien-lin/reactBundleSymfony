@@ -36,3 +36,59 @@ npm-debug.log*
 PUBLICATION.md
 ANALYSE_COMPLETE.md
 CORRECTIONS_APPLIQUEES.md
+
+# Documentation de production (locale)
+/documentation/
+
+# PHPUnit cache
+.phpunit.cache/
+
+# Test coverage reports
+coverage/
+coverage.xml
+.coverage
+*.coverage
+
+# IDE extended
+*.sublime-project
+*.sublime-workspace
+.vscode/settings.json
+.vscode/launch.json
+.vscode/extensions.json
+.DS_Store/
+.AppleDouble
+.LSOverride
+
+# Node specific
+.npm
+.node-gyp/
+npm-error.log
+yarn-error.log
+
+# Vite cache
+.vite/
+.vite-cache/
+
+# Composer
+composer.phar
+
+# PHP specific
+.php_cs
+.php_cs.cache
+.phpcs.cache
+.phpstan.cache
+phpstan.neon.dist
+
+# Symfony specific
+/config/packages/local/
+/var/
+/public/uploads/
+.env.*.local
+
+# Testing
+.phpunit.result.cache
+
+# Misc
+.cache/
+.tmp/
+*.bak
