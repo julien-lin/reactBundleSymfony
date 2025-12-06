@@ -14,6 +14,7 @@ services:
         arguments:
             $twig: '@twig'
             $buildDir: '%react.build_dir%'
+            $logger: '@?logger'
 
     ReactBundle\Twig\ReactExtension:
         tags:

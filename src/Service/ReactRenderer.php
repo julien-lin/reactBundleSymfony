@@ -1,19 +1,25 @@
 <?php
 
+declare(strict_types=1);
+
 namespace ReactBundle\Service;
 
+use Psr\Log\LoggerInterface;
+use Psr\Log\NullLogger;
 use Twig\Environment;
 
 class ReactRenderer
 {
     private Environment $twig;
     private string $buildDir;
+    private LoggerInterface $logger;
     private static int $componentCounter = 0;
 
-    public function __construct(Environment $twig, string $buildDir = 'build')
+    public function __construct(Environment $twig, string $buildDir = 'build', ?LoggerInterface $logger = null)
     {
         $this->twig = $twig;
         $this->buildDir = $buildDir;
+        $this->logger = $logger ?? new NullLogger();
     }
 
     /**
@@ -23,18 +29,29 @@ class ReactRenderer
      * @param array $props Propriétés à passer au composant
      * @param string|null $id ID unique pour le conteneur (généré automatiquement si null)
      * @return string HTML généré
+     * @throws \InvalidArgumentException Si le nom du composant est invalide
      */
     public function render(string $componentName, array $props = [], ?string $id = null): string
     {
+        // ✅ P0-SEC-02: Valider le nom du composant
+        if (!$this->isValidComponentName($componentName)) {
+            throw new \InvalidArgumentException(
+                sprintf(
+                    'Invalid component name: %s. Must contain only alphanumeric characters, hyphens, and underscores.',
+                    $componentName
+                )
+            );
+        }
+
         if ($id === null) {
             $id = 'react-component-' . ++self::$componentCounter . '-' . uniqid();
         }
 
-        // Valider et échapper les props pour la sécurité
+        // ✅ P0-XSS-01: Valider et échapper les props pour la sécurité
         try {
             // Encoder en JSON normal (sans flags d'échappement HTML)
             $jsonProps = json_encode($props, JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES);
-            
+
             if (json_last_error() !== JSON_ERROR_NONE) {
                 throw new \RuntimeException(
                     sprintf(
@@ -44,23 +61,22 @@ class ReactRenderer
                     )
                 );
             }
-            
-            // Échapper pour un attribut HTML avec guillemets simples
-            // On échappe seulement les guillemets simples (car l'attribut utilise des guillemets simples)
-            // et les caractères HTML dangereux (&, <, >)
-            // Les guillemets doubles dans le JSON seront préservés car l'attribut utilise des guillemets simples
-            $escapedProps = str_replace(
-                ['&', '<', '>', "'"],
-                ['&amp;', '&lt;', '&gt;', '&#39;'],
-                $jsonProps
+
+            // ✅ P0-XSS-01: Utiliser htmlspecialchars() comme standard pour l'échappement HTML
+            // Cela échappe correctement pour un attribut HTML
+            $escapedProps = htmlspecialchars(
+                $jsonProps,
+                ENT_QUOTES | ENT_HTML5,
+                'UTF-8',
+                false  // Ne pas double-encoder
             );
         } catch (\Exception $e) {
-            // En cas d'erreur, utiliser un objet vide et logger l'erreur
-            error_log(sprintf(
-                'ReactBundle: Erreur lors du rendu du composant "%s": %s',
-                $componentName,
-                $e->getMessage()
-            ));
+            // ✅ P1-LOG-01: Utiliser un vrai logger au lieu de error_log()
+            $this->logger->error('Erreur lors du rendu du composant', [
+                'component' => $componentName,
+                'error' => $e->getMessage(),
+                'code' => $e->getCode(),
+            ]);
             $escapedProps = '{}';
         }
 
@@ -71,9 +87,25 @@ class ReactRenderer
         ]);
     }
 
+    /**
+     * ✅ P0-SEC-02: Valide que le nom du composant respecte les règles de sécurité
+     */
+    private function isValidComponentName(string $name): bool
+    {
+        // Permettre seulement alphanumériques, traits d'union et underscores
+        return preg_match('/^[a-zA-Z0-9_-]+$/', $name) === 1 && strlen($name) <= 255;
+    }
+
+    /**
+     * Injecte le logger (utile pour les tests)
+     */
+    public function setLogger(LoggerInterface $logger): void
+    {
+        $this->logger = $logger;
+    }
+
     public function getBuildDir(): string
     {
         return $this->buildDir;
     }
 }
-
