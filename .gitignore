@@ -40,6 +40,7 @@ documentation/CODE_REVIEW*.md
 documentation/CORRECTIONS*.md
 documentation/RESUME_*.md
 documentation/TEMPLATES*.md
+documentation/
 
 # PHPUnit cache
 .phpunit.cache/

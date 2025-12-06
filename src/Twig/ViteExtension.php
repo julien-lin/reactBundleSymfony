@@ -33,7 +33,7 @@ class ViteExtension extends AbstractExtension
     {
         // Chemin vers public/build/ depuis le bundle (vendor/ ou src/)
         $bundlePath = $this->getBundlePath();
-        
+
         // Calculer le projet root : si dans vendor/, remonter de 3 niveaux, sinon 2
         $vendorSeparator = DIRECTORY_SEPARATOR . 'vendor' . DIRECTORY_SEPARATOR;
         if (strpos($bundlePath, $vendorSeparator) !== false) {
@@ -41,22 +41,22 @@ class ViteExtension extends AbstractExtension
         } else {
             $projectRoot = dirname($bundlePath, 2); // src/ReactBundle -> racine
         }
-        
+
         // Normaliser les chemins
         $projectRoot = $this->normalizePath($projectRoot);
         $buildDir = $this->normalizePath($this->buildDir);
-        
+
         // Le manifest peut être dans .vite/ ou directement dans build/
         $manifestPath = $projectRoot . DIRECTORY_SEPARATOR . 'public' . DIRECTORY_SEPARATOR . $buildDir . DIRECTORY_SEPARATOR . '.vite' . DIRECTORY_SEPARATOR . 'manifest.json';
         if (!file_exists($manifestPath)) {
             $manifestPath = $projectRoot . DIRECTORY_SEPARATOR . 'public' . DIRECTORY_SEPARATOR . $buildDir . DIRECTORY_SEPARATOR . 'manifest.json';
         }
         $manifestExists = file_exists($manifestPath);
-        
+
         // Si le manifest existe, utiliser le build de production (même en dev)
         if ($manifestExists) {
             $manifest = json_decode(file_get_contents($manifestPath), true);
-            
+
             // Chercher l'entrée dans le manifest (peut être 'app' ou 'js/app.jsx')
             $manifestKey = $entry;
             if (!isset($manifest[$manifestKey])) {
@@ -87,7 +87,7 @@ class ViteExtension extends AbstractExtension
 
             return $html;
         }
-        
+
         // Si pas de manifest et en dev, essayer le serveur Vite
         if ($this->isDev) {
             $viteUrl = rtrim($this->viteServer, '/');
@@ -98,7 +98,7 @@ class ViteExtension extends AbstractExtension
                 $entry === 'app' ? 'js/app.jsx' : $entry
             );
         }
-        
+
         // Sinon, erreur
         return sprintf('<!-- Vite manifest not found: %s -->', $manifestPath);
     }
@@ -114,7 +114,7 @@ class ViteExtension extends AbstractExtension
 
         // Chemin vers public/build/ depuis le bundle (vendor/ ou src/)
         $bundlePath = $this->getBundlePath();
-        
+
         // Calculer le projet root : si dans vendor/, remonter de 3 niveaux, sinon 2
         $vendorSeparator = DIRECTORY_SEPARATOR . 'vendor' . DIRECTORY_SEPARATOR;
         if (strpos($bundlePath, $vendorSeparator) !== false) {
@@ -122,23 +122,23 @@ class ViteExtension extends AbstractExtension
         } else {
             $projectRoot = dirname($bundlePath, 2); // src/ReactBundle -> racine
         }
-        
+
         // Normaliser les chemins
         $projectRoot = $this->normalizePath($projectRoot);
         $buildDir = $this->normalizePath($this->buildDir);
-        
+
         // Le manifest peut être dans .vite/ ou directement dans build/
         $manifestPath = $projectRoot . DIRECTORY_SEPARATOR . 'public' . DIRECTORY_SEPARATOR . $buildDir . DIRECTORY_SEPARATOR . '.vite' . DIRECTORY_SEPARATOR . 'manifest.json';
         if (!file_exists($manifestPath)) {
             $manifestPath = $projectRoot . DIRECTORY_SEPARATOR . 'public' . DIRECTORY_SEPARATOR . $buildDir . DIRECTORY_SEPARATOR . 'manifest.json';
         }
-        
+
         if (!file_exists($manifestPath)) {
             return '';
         }
 
         $manifest = json_decode(file_get_contents($manifestPath), true);
-        
+
         // Chercher l'entrée dans le manifest (peut être 'app' ou 'js/app.jsx')
         $manifestKey = $entry;
         if (!isset($manifest[$manifestKey])) {
@@ -147,7 +147,7 @@ class ViteExtension extends AbstractExtension
                 return '';
             }
         }
-        
+
         if (!isset($manifest[$manifestKey]['css'])) {
             return '';
         }
@@ -169,10 +169,10 @@ class ViteExtension extends AbstractExtension
         // Utiliser la réflexion pour trouver le chemin réel du bundle
         $reflection = new \ReflectionClass(\ReactBundle\ReactBundle::class);
         $bundlePath = dirname($reflection->getFileName(), 2);
-        
+
         // Normaliser les séparateurs de chemin pour Windows
         $bundlePath = str_replace(['\\', '/'], DIRECTORY_SEPARATOR, $bundlePath);
-        
+
         // Si le bundle est dans vendor/, vérifier que c'est bien le bon chemin
         if (strpos($bundlePath, DIRECTORY_SEPARATOR . 'vendor' . DIRECTORY_SEPARATOR) !== false) {
             // Vérifier que package.json existe pour confirmer que c'est le bon chemin
@@ -180,17 +180,17 @@ class ViteExtension extends AbstractExtension
                 return $bundlePath;
             }
         }
-        
+
         // Sinon, on est dans le développement local (src/ReactBundle)
         // Vérifier que package.json existe
         if (file_exists($bundlePath . DIRECTORY_SEPARATOR . 'package.json')) {
             return $bundlePath;
         }
-        
+
         // Fallback : remonter depuis le répertoire actuel
         return dirname(__DIR__, 2);
     }
-    
+
     /**
      * Normalise un chemin pour être compatible avec tous les OS
      */
@@ -199,4 +199,3 @@ class ViteExtension extends AbstractExtension
         return str_replace(['\\', '/'], DIRECTORY_SEPARATOR, $path);
     }
 }
-

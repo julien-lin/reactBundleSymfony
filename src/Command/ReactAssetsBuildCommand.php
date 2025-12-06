@@ -36,7 +36,7 @@ class ReactAssetsBuildCommand extends Command
         $projectRoot = $this->getProjectRoot($bundlePath);
         $projectViteConfig = $projectRoot . DIRECTORY_SEPARATOR . 'vite.config.js';
         $projectPackageJson = $projectRoot . DIRECTORY_SEPARATOR . 'package.json';
-        
+
         // Si le projet a son propre vite.config.js, utiliser celui-ci
         if (file_exists($projectViteConfig) && file_exists($projectPackageJson)) {
             $io->info('Configuration Vite du projet détectée, utilisation de celle-ci.');
@@ -59,7 +59,7 @@ class ReactAssetsBuildCommand extends Command
                 $installCommand = $this->prepareInstallCommand($npmPath);
                 $installProcess = new Process($installCommand, $workingPath);
                 $installProcess->setTimeout(600);
-                
+
                 // Si npm est dans nvm, définir les variables d'environnement
                 if (strpos($npmPath, '.nvm') !== false) {
                     $nvmDir = dirname(dirname($npmPath));
@@ -103,7 +103,7 @@ class ReactAssetsBuildCommand extends Command
         $process = new Process($command);
         $process->setTimeout(null);
         $process->setWorkingDirectory($workingPath);
-        
+
         // Si npm est dans nvm, définir les variables d'environnement nécessaires
         if (strpos($npmPath, '.nvm') !== false) {
             $nvmDir = dirname(dirname($npmPath));
@@ -202,10 +202,10 @@ class ReactAssetsBuildCommand extends Command
         // Utiliser la réflexion pour trouver le chemin réel du bundle
         $reflection = new \ReflectionClass(\ReactBundle\ReactBundle::class);
         $bundlePath = dirname($reflection->getFileName(), 2);
-        
+
         // Normaliser les séparateurs de chemin pour Windows
         $bundlePath = str_replace(['\\', '/'], DIRECTORY_SEPARATOR, $bundlePath);
-        
+
         // Si le bundle est dans vendor/, vérifier que c'est bien le bon chemin
         $vendorSeparator = DIRECTORY_SEPARATOR . 'vendor' . DIRECTORY_SEPARATOR;
         if (strpos($bundlePath, $vendorSeparator) !== false) {
@@ -214,13 +214,13 @@ class ReactAssetsBuildCommand extends Command
                 return $bundlePath;
             }
         }
-        
+
         // Sinon, on est dans le développement local (src/ReactBundle)
         // Vérifier que package.json existe
         if (file_exists($bundlePath . DIRECTORY_SEPARATOR . 'package.json')) {
             return $bundlePath;
         }
-        
+
         // Fallback : remonter depuis le répertoire actuel
         return dirname(__DIR__, 2);
     }
@@ -234,7 +234,7 @@ class ReactAssetsBuildCommand extends Command
         if (strpos($npmPath, '.nvm') !== false) {
             $nvmDir = dirname(dirname($npmPath));
             $nodePath = dirname($npmPath);
-            
+
             if ($dev) {
                 return [
                     'bash', '-c',
@@ -328,7 +328,7 @@ class ReactAssetsBuildCommand extends Command
     {
         // Normaliser les séparateurs de chemin
         $bundlePath = str_replace(['\\', '/'], DIRECTORY_SEPARATOR, $bundlePath);
-        
+
         // Si dans vendor/, remonter de 3 niveaux pour atteindre la racine du projet
         $vendorSeparator = DIRECTORY_SEPARATOR . 'vendor' . DIRECTORY_SEPARATOR;
         if (strpos($bundlePath, $vendorSeparator) !== false) {
@@ -338,4 +338,3 @@ class ReactAssetsBuildCommand extends Command
         return dirname($bundlePath, 2);
     }
 }
-

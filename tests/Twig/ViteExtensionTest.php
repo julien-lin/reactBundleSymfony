@@ -44,7 +44,7 @@ class ViteExtensionTest extends TestCase
     {
         $functions = $this->viteExtension->getFunctions();
         $functionNames = array_map(fn($func) => $func->getName(), $functions);
-        
+
         $this->assertContains('vite_entry_script_tags', $functionNames);
         $this->assertContains('vite_entry_link_tags', $functionNames);
     }
@@ -52,7 +52,7 @@ class ViteExtensionTest extends TestCase
     public function testViteExtensionFunctionsCallable(): void
     {
         $functions = $this->viteExtension->getFunctions();
-        
+
         foreach ($functions as $function) {
             $this->assertTrue(method_exists($this->viteExtension, $function->getCallable()[1]));
         }

@@ -42,10 +42,12 @@ class ScriptHandlerTest extends TestCase
     public function testScriptHandlerHasRequiredMethods(): void
     {
         $requiredMethods = ['installAssets', 'findNpm', 'prepareInstallCommand'];
-        
+
         foreach ($requiredMethods as $method) {
-            $this->assertTrue(method_exists(ScriptHandler::class, $method), 
-                sprintf('ScriptHandler must have method: %s', $method));
+            $this->assertTrue(
+                method_exists(ScriptHandler::class, $method),
+                sprintf('ScriptHandler must have method: %s', $method)
+            );
         }
     }
 }

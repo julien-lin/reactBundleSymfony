@@ -35,4 +35,3 @@ class ReactExtension extends AbstractExtension
         return $this->reactRenderer->render($componentName, $props, $id);
     }
 }
-
