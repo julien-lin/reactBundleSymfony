@@ -31,7 +31,7 @@ class ScriptHandler
 
         // Trouver npm avec plusieurs tentatives
         $npmPath = self::findNpm();
-        
+
         if (!$npmPath) {
             $io->write('<warning>npm n\'a pas pu être trouvé automatiquement.</warning>');
             $io->write('<comment>Vous pouvez installer les dépendances manuellement avec:</comment>');
@@ -48,7 +48,7 @@ class ScriptHandler
         $installCommand = self::prepareInstallCommand($npmPath);
         $process = new Process($installCommand, $bundlePath);
         $process->setTimeout(600); // Augmenter le timeout pour les installations lentes
-        
+
         // Si npm est dans nvm, définir les variables d'environnement
         if (strpos($npmPath, '.nvm') !== false) {
             $nvmDir = dirname(dirname($npmPath));
@@ -159,4 +159,3 @@ class ScriptHandler
         return [$npmPath, 'install'];
     }
 }
-

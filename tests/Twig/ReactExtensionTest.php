@@ -39,7 +39,7 @@ class ReactExtensionTest extends TestCase
     {
         $functions = $this->reactExtension->getFunctions();
         $functionNames = array_map(fn($func) => $func->getName(), $functions);
-        
+
         $this->assertContains('react_component', $functionNames);
     }
 
@@ -62,7 +62,7 @@ class ReactExtensionTest extends TestCase
     public function testRenderComponentWithProps(): void
     {
         $props = ['title' => 'Test', 'count' => 42];
-        
+
         $this->reactRenderer->expects($this->once())
             ->method('render')
             ->with('TestComponent', $props, 'test-id')

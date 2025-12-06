@@ -30,7 +30,7 @@ class ReactExtension extends Extension
 
     /**
      * ✅ P0-SEC-01: Récupère et valide l'URL du serveur Vite
-     * 
+     *
      * @throws \InvalidArgumentException Si l'URL n'est pas valide
      */
     private function getViteServerUrl(array $config): string
