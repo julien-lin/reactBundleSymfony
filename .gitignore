@@ -32,13 +32,14 @@ npm-debug.log*
 .env
 .env.local
 
-# Documentation interne (non publiée)
-PUBLICATION.md
-ANALYSE_COMPLETE.md
-CORRECTIONS_APPLIQUEES.md
-
-# Documentation de production (locale)
-/documentation/
+# Documentation interne (non publiée) - Dev temporaire
+documentation/PHASE*.md
+documentation/PROJECT_STATUS.md
+documentation/PLAN_*.md
+documentation/CODE_REVIEW*.md
+documentation/CORRECTIONS*.md
+documentation/RESUME_*.md
+documentation/TEMPLATES*.md
 
 # PHPUnit cache
 .phpunit.cache/
