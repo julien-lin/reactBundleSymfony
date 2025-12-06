@@ -89,6 +89,9 @@ phpstan.neon.dist
 # Testing
 .phpunit.result.cache
 
+# PHPStan local config
+phpstan.neon
+
 # Misc
 .cache/
 .tmp/
