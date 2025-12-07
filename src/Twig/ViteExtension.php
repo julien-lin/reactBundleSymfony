@@ -15,6 +15,7 @@ class ViteExtension extends AbstractExtension
     private string $viteServer;
     private string $buildDir;
     private LoggerInterface $logger;
+    private array $manifestCache = []; // ✅ P2-PERF-01: Manifest caching
 
     public function __construct(bool $isDev = false, string $viteServer = 'http://localhost:3000', string $buildDir = 'build', ?LoggerInterface $logger = null)
     {
@@ -246,12 +247,20 @@ class ViteExtension extends AbstractExtension
 
     /**
      * ✅ P1-ERR-01: Charge et valide le manifest Vite avec gestion d'erreur robuste
+     * ✅ P2-PERF-01: Cache le manifest en mémoire pour les appels multiples
      *
      * @throws \RuntimeException Si le manifest est invalide
      * @throws \JsonException Si le JSON est corrompu
      */
     private function loadAndValidateManifest(string $manifestPath): array
     {
+        // ✅ P2-PERF-01: Vérifier le cache d'abord
+        $cacheKey = md5($manifestPath);
+        if (isset($this->manifestCache[$cacheKey])) {
+            $this->logger->debug('Manifest loaded from cache', ['path' => $manifestPath]);
+            return $this->manifestCache[$cacheKey];
+        }
+
         // Vérifier l'existence du fichier
         if (!file_exists($manifestPath)) {
             throw new \RuntimeException("Vite manifest not found at: $manifestPath");
@@ -278,6 +287,13 @@ class ViteExtension extends AbstractExtension
         if (!is_array($manifest)) {
             throw new \RuntimeException("Vite manifest must be a JSON object, got: " . gettype($manifest));
         }
+
+        // ✅ P2-PERF-01: Stocker en cache (limite à 10 manifests max)
+        if (count($this->manifestCache) >= 10) {
+            array_shift($this->manifestCache); // Supprimer le plus ancien
+        }
+        $this->manifestCache[$cacheKey] = $manifest;
+        $this->logger->debug('Manifest loaded and cached', ['path' => $manifestPath, 'entry_count' => count($manifest)]);
 
         return $manifest;
     }
