@@ -57,37 +57,42 @@ class ViteExtension extends AbstractExtension
 
         // Si le manifest existe, utiliser le build de production (même en dev)
         if ($manifestExists) {
-            $manifest = json_decode(file_get_contents($manifestPath), true);
+            try {
+                $manifest = $this->loadAndValidateManifest($manifestPath);
 
-            // Chercher l'entrée dans le manifest (peut être 'app' ou 'js/app.jsx')
-            $manifestKey = $entry;
-            if (!isset($manifest[$manifestKey])) {
-                // Essayer avec le chemin complet
-                $manifestKey = $entry === 'app' ? 'js/app.jsx' : $entry;
+                // Chercher l'entrée dans le manifest (peut être 'app' ou 'js/app.jsx')
+                $manifestKey = $entry;
                 if (!isset($manifest[$manifestKey])) {
-                    return sprintf('<!-- Entry "%s" not found in manifest. Available keys: %s -->', $entry, implode(', ', array_keys($manifest)));
+                    // Essayer avec le chemin complet
+                    $manifestKey = $entry === 'app' ? 'js/app.jsx' : $entry;
+                    if (!isset($manifest[$manifestKey])) {
+                        return sprintf('<!-- Entry "%s" not found in manifest. Available keys: %s -->', $entry, implode(', ', array_keys($manifest)));
+                    }
                 }
-            }
 
-            $entryData = $manifest[$manifestKey];
-            $html = sprintf(
-                '<script type="module" src="/%s/%s"></script>',
-                $this->buildDir,
-                $entryData['file']
-            );
+                $entryData = $manifest[$manifestKey];
+                $html = sprintf(
+                    '<script type="module" src="/%s/%s"></script>',
+                    $this->buildDir,
+                    $entryData['file']
+                );
 
-            // Ajouter les imports CSS si présents
-            if (isset($entryData['css'])) {
-                foreach ($entryData['css'] as $css) {
-                    $html .= sprintf(
-                        '<link rel="stylesheet" href="/%s/%s">',
-                        $this->buildDir,
-                        $css
-                    );
+                // Ajouter les imports CSS si présents
+                if (isset($entryData['css'])) {
+                    foreach ($entryData['css'] as $css) {
+                        $html .= sprintf(
+                            '<link rel="stylesheet" href="/%s/%s">',
+                            $this->buildDir,
+                            $css
+                        );
+                    }
                 }
-            }
 
-            return $html;
+                return $html;
+            } catch (\Exception $e) {
+                // Log error and return fallback
+                return sprintf('<!-- Error loading Vite manifest: %s -->', htmlspecialchars($e->getMessage()));
+            }
         }
 
         // Si pas de manifest et en dev, essayer le serveur Vite
@@ -199,5 +204,43 @@ class ViteExtension extends AbstractExtension
     private function normalizePath(string $path): string
     {
         return str_replace(['\\', '/'], DIRECTORY_SEPARATOR, $path);
+    }
+
+    /**
+     * ✅ P1-ERR-01: Charge et valide le manifest Vite avec gestion d'erreur robuste
+     *
+     * @throws \RuntimeException Si le manifest est invalide
+     * @throws \JsonException Si le JSON est corrompu
+     */
+    private function loadAndValidateManifest(string $manifestPath): array
+    {
+        // Vérifier l'existence du fichier
+        if (!file_exists($manifestPath)) {
+            throw new \RuntimeException("Vite manifest not found at: $manifestPath");
+        }
+
+        // Lire le contenu du fichier
+        $content = @file_get_contents($manifestPath);
+        if ($content === false) {
+            throw new \RuntimeException("Cannot read Vite manifest at: $manifestPath");
+        }
+
+        // Décoder le JSON
+        $manifest = json_decode($content, true);
+
+        // Valider le JSON
+        if (json_last_error() !== JSON_ERROR_NONE) {
+            throw new \JsonException(
+                sprintf("Invalid JSON in Vite manifest: %s", json_last_error_msg()),
+                json_last_error()
+            );
+        }
+
+        // Valider que c'est un array
+        if (!is_array($manifest)) {
+            throw new \RuntimeException("Vite manifest must be a JSON object, got: " . gettype($manifest));
+        }
+
+        return $manifest;
     }
 }
