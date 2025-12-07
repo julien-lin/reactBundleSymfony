@@ -25,13 +25,44 @@ class ReactExtension extends Extension
         // ✅ P0-SEC-01: Validation sécurisée de l'URL Vite (SSRF protection)
         $viteServer = $this->getViteServerUrl($config);
 
-        $container->setParameter('react.build_dir', $config['build_dir'] ?? 'build');
-        $container->setParameter('react.assets_dir', $config['assets_dir'] ?? 'assets');
+        $buildDir = $config['build_dir'] ?? 'build';
+        $assetsDir = $config['assets_dir'] ?? 'assets';
+
+        // ✅ P2-VAL-01: Valider que les répertoires existent (avertissement seulement)
+        $this->validateDirectories($buildDir, $assetsDir);
+
+        $container->setParameter('react.build_dir', $buildDir);
+        $container->setParameter('react.assets_dir', $assetsDir);
         $container->setParameter('react.vite_server', $viteServer);
     }
 
     /**
+     * ✅ P2-VAL-01: Valide que les répertoires configurés existent
+     */
+    private function validateDirectories(string $buildDir, string $assetsDir): void
+    {
+        // Public build directory
+        $publicBuildPath = getcwd() . DIRECTORY_SEPARATOR . 'public' . DIRECTORY_SEPARATOR . $buildDir;
+        if (!is_dir($publicBuildPath)) {
+            trigger_error(
+                sprintf('Build directory not found: %s', $publicBuildPath),
+                E_USER_WARNING
+            );
+        }
+
+        // Assets directory
+        $assetsPath = getcwd() . DIRECTORY_SEPARATOR . $assetsDir;
+        if (!is_dir($assetsPath)) {
+            trigger_error(
+                sprintf('Assets directory not found: %s', $assetsPath),
+                E_USER_WARNING
+            );
+        }
+    }
+
+    /**
      * ✅ P0-SEC-01: Récupère et valide l'URL du serveur Vite
+     * ✅ P2-VAL-02: Valide le format et la cohérence de VITE_SERVER_URL
      *
      * @throws \InvalidArgumentException Si l'URL n'est pas valide
      */
@@ -44,6 +75,14 @@ class ReactExtension extends Extension
         if (!$this->isValidViteServerUrl($viteServer)) {
             throw new \InvalidArgumentException(
                 sprintf('VITE_SERVER_URL "%s" is invalid. Must be a valid http(s) URL.', $viteServer)
+            );
+        }
+
+        // Avertir si on utilise localhost en production
+        if (getenv('APP_ENV') === 'prod' && strpos($viteServer, 'localhost') !== false) {
+            trigger_error(
+                sprintf('VITE_SERVER_URL uses localhost in production: %s', $viteServer),
+                E_USER_WARNING
             );
         }
 
