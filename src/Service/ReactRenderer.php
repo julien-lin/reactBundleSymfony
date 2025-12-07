@@ -75,12 +75,25 @@ class ReactRenderer
                 false  // Ne pas double-encoder
             );
         } catch (\Exception $e) {
-            // ✅ P1-LOG-01: Utiliser un vrai logger au lieu de error_log()
+            // ✅ P2-LOG-02: Logging détaillé des erreurs avec stack trace en debug
             $this->logger->error('Erreur lors du rendu du composant', [
                 'component' => $componentName,
                 'error' => $e->getMessage(),
                 'code' => $e->getCode(),
+                'file' => $e->getFile(),
+                'line' => $e->getLine(),
+                'exception_class' => get_class($e),
+                'request_id' => $_SERVER['X-Request-ID'] ?? getenv('X-Request-ID') ?? substr(uniqid(), -8),
+                'timestamp' => date('Y-m-d H:i:s.u'),
             ]);
+            
+            // Inclure stack trace en environnement debug
+            if (getenv('APP_DEBUG') === 'true' || getenv('DEBUG') === '1') {
+                $this->logger->debug('Stack trace pour erreur de rendu', [
+                    'trace' => explode("\n", $e->getTraceAsString()),
+                ]);
+            }
+            
             $escapedProps = '{}';
         }
 
@@ -96,12 +109,21 @@ class ReactRenderer
         $duration = ($endTime - $startTime) * 1000; // en millisecondes
         $memoryUsed = ($endMemory - $startMemory) / 1024; // en KB
 
+        // ✅ P2-LOG-01: Contexte enrichi avec request_id, props keys, et métadonnées
+        $propsKeys = array_keys($props);
+        $requestId = $_SERVER['X-Request-ID'] ?? getenv('X-Request-ID') ?? substr(uniqid(), -8);
+
         $this->logger->info('React component rendered', [
             'component' => $componentName,
+            'component_id' => $id,
             'duration_ms' => round($duration, 2),
             'memory_kb' => round($memoryUsed, 2),
             'props_count' => count($props),
+            'props_keys' => implode(',', $propsKeys),
             'html_length' => strlen($html),
+            'request_id' => $requestId,
+            'timestamp' => date('Y-m-d H:i:s.u'),
+            'memory_peak_mb' => round(memory_get_peak_usage(true) / 1024 / 1024, 2),
         ]);
 
         return $html;
