@@ -239,17 +239,20 @@ class ReactAssetsBuildCommand extends Command
 
             if ($dev) {
                 return [
-                    'bash', '-c',
+                    'bash',
+                    '-c',
                     "export PATH=\"$nodePath:\$PATH\" && export NVM_DIR=\"$nvmDir\" && $npmPath run dev"
                 ];
             } elseif ($watch) {
                 return [
-                    'bash', '-c',
+                    'bash',
+                    '-c',
                     "export PATH=\"$nodePath:\$PATH\" && export NVM_DIR=\"$nvmDir\" && $npmPath run build:watch"
                 ];
             } else {
                 return [
-                    'bash', '-c',
+                    'bash',
+                    '-c',
                     "export PATH=\"$nodePath:\$PATH\" && export NVM_DIR=\"$nvmDir\" && $npmPath run build"
                 ];
             }
@@ -275,7 +278,8 @@ class ReactAssetsBuildCommand extends Command
             $nvmDir = dirname(dirname($npmPath));
             $nodePath = dirname($npmPath);
             return [
-                'bash', '-c',
+                'bash',
+                '-c',
                 "export PATH=\"$nodePath:\$PATH\" && export NVM_DIR=\"$nvmDir\" && $npmPath install"
             ];
         }
