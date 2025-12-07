@@ -61,20 +61,49 @@ class ScriptHandler
             $process->setEnv($env);
         }
 
-        try {
-            $process->mustRun(function ($type, $buffer) use ($io) {
-                // Afficher seulement les messages importants pour ne pas polluer la sortie
-                if ($type === Process::ERR || strpos($buffer, 'error') !== false || strpos($buffer, 'Error') !== false) {
-                    $io->write($buffer, false);
-                } elseif (strpos($buffer, 'added') !== false || strpos($buffer, 'up to date') !== false) {
-                    $io->write($buffer, false);
+        // ✅ P3-RETRY-01: Implémenter une retry logic avec backoff exponentiel
+        $maxRetries = 3;
+        $retryDelay = 2; // secondes
+
+        for ($attempt = 1; $attempt <= $maxRetries; $attempt++) {
+            try {
+                $io->write('<info>Tentative d\'installation npm... (tentative ' . $attempt . '/' . $maxRetries . ')</info>');
+                
+                $process->mustRun(function ($type, $buffer) use ($io) {
+                    // Afficher seulement les messages importants pour ne pas polluer la sortie
+                    if ($type === Process::ERR || strpos($buffer, 'error') !== false || strpos($buffer, 'Error') !== false) {
+                        $io->write($buffer, false);
+                    } elseif (strpos($buffer, 'added') !== false || strpos($buffer, 'up to date') !== false) {
+                        $io->write($buffer, false);
+                    }
+                });
+                $io->write('<info>✓ Dépendances npm installées avec succès !</info>');
+                return; // Success
+            } catch (\Exception $e) {
+                if ($attempt < $maxRetries) {
+                    $io->write('<warning>Tentative ' . $attempt . ' échouée: ' . $e->getMessage() . '</warning>');
+                    $io->write('<comment>Attente de ' . $retryDelay . 's avant la prochaine tentative...</comment>');
+                    sleep($retryDelay);
+                    $retryDelay *= 2; // Backoff exponentiel (2s, 4s, 8s)
+                    
+                    // Créer une nouvelle instance du process pour la prochaine tentative
+                    $process = new Process($installCommand, $bundlePath);
+                    $process->setTimeout(600);
+                    if (strpos($npmPath, '.nvm') !== false) {
+                        $nvmDir = dirname(dirname($npmPath));
+                        $nodePath = dirname($npmPath);
+                        $env = $_ENV;
+                        $env['PATH'] = $nodePath . ':' . ($env['PATH'] ?? getenv('PATH'));
+                        $env['NVM_DIR'] = $nvmDir;
+                        $process->setEnv($env);
+                    }
+                } else {
+                    // Dernière tentative échouée
+                    $io->write('<error>Erreur lors de l\'installation npm après ' . $maxRetries . ' tentatives: ' . $e->getMessage() . '</error>');
+                    $io->write('<comment>Vous pouvez installer manuellement avec: cd ' . $bundlePath . ' && npm install</comment>');
+                    $io->write('<comment>Ou utiliser: php bin/console react:build</comment>');
                 }
-            });
-            $io->write('<info>✓ Dépendances npm installées avec succès !</info>');
-        } catch (\Exception $e) {
-            $io->write('<error>Erreur lors de l\'installation npm: ' . $e->getMessage() . '</error>');
-            $io->write('<comment>Vous pouvez installer manuellement avec: cd ' . $bundlePath . ' && npm install</comment>');
-            $io->write('<comment>Ou utiliser: php bin/console react:build</comment>');
+            }
         }
     }
 
