@@ -51,14 +51,14 @@ class ScriptHandler
         $process = new Process($installCommand, $bundlePath);
         $process->setTimeout(600); // Augmenter le timeout pour les installations lentes
 
-        // Si npm est dans nvm, définir les variables d'environnement
+        // Si npm est dans nvm, définir les variables d'environnement AVANT la commande
         if (strpos($npmPath, '.nvm') !== false) {
             $nvmDir = dirname(dirname($npmPath));
             $nodePath = dirname($npmPath);
-            $process->setEnv([
-                'PATH' => $nodePath . ':' . getenv('PATH'),
-                'NVM_DIR' => $nvmDir,
-            ]);
+            $env = $_ENV; // Récupérer l'environnement actuel
+            $env['PATH'] = $nodePath . ':' . ($env['PATH'] ?? getenv('PATH'));
+            $env['NVM_DIR'] = $nvmDir;
+            $process->setEnv($env);
         }
 
         try {
@@ -145,6 +145,9 @@ class ScriptHandler
 
     /**
      * Prépare la commande d'installation npm avec support nvm si nécessaire
+     *
+     * @param string $npmPath Le chemin vers npm (validé et sûr)
+     * @return array La commande à exécuter
      */
     private static function prepareInstallCommand(string $npmPath): array
     {
@@ -152,12 +155,22 @@ class ScriptHandler
         if (strpos($npmPath, '.nvm') !== false) {
             $nvmDir = dirname(dirname($npmPath));
             $nodePath = dirname($npmPath);
+
+            // SÉCURITÉ: Utiliser escapeshellarg() pour éviter les injections de commandes
+            // Chaque argument est correctement échappé
             return [
-                'bash', '-c',
-                "export PATH=\"$nodePath:\$PATH\" && export NVM_DIR=\"$nvmDir\" && $npmPath install"
+                'bash',
+                '-c',
+                sprintf(
+                    'export PATH=%s:$PATH && export NVM_DIR=%s && %s install',
+                    escapeshellarg($nodePath),
+                    escapeshellarg($nvmDir),
+                    escapeshellarg($npmPath)
+                )
             ];
         }
 
+        // SÉCURITÉ: Retourner le tableau directement - Process() gère les tableaux en toute sécurité
         return [$npmPath, 'install'];
     }
 }
