@@ -4,6 +4,8 @@ declare(strict_types=1);
 
 namespace ReactBundle\Twig;
 
+use Psr\Log\LoggerInterface;
+use Psr\Log\NullLogger;
 use Twig\Extension\AbstractExtension;
 use Twig\TwigFunction;
 
@@ -12,12 +14,14 @@ class ViteExtension extends AbstractExtension
     private bool $isDev;
     private string $viteServer;
     private string $buildDir;
+    private LoggerInterface $logger;
 
-    public function __construct(bool $isDev = false, string $viteServer = 'http://localhost:3000', string $buildDir = 'build')
+    public function __construct(bool $isDev = false, string $viteServer = 'http://localhost:3000', string $buildDir = 'build', ?LoggerInterface $logger = null)
     {
         $this->isDev = $isDev;
         $this->viteServer = $viteServer;
         $this->buildDir = $buildDir;
+        $this->logger = $logger ?? new NullLogger();
     }
 
     public function getFunctions(): array
@@ -55,6 +59,14 @@ class ViteExtension extends AbstractExtension
         }
         $manifestExists = file_exists($manifestPath);
 
+        // ✅ P2-LOG-03: Log mode et manifest status
+        $this->logger->debug('Vite extension rendering script tags', [
+            'mode' => $this->isDev ? 'dev' : 'production',
+            'entry' => $entry,
+            'manifest_exists' => $manifestExists,
+            'manifest_path' => $manifestPath,
+        ]);
+
         // Si le manifest existe, utiliser le build de production (même en dev)
         if ($manifestExists) {
             try {
@@ -66,6 +78,11 @@ class ViteExtension extends AbstractExtension
                     // Essayer avec le chemin complet
                     $manifestKey = $entry === 'app' ? 'js/app.jsx' : $entry;
                     if (!isset($manifest[$manifestKey])) {
+                        $this->logger->warning('Entry not found in Vite manifest', [
+                            'entry' => $entry,
+                            'available_keys' => array_keys($manifest),
+                            'manifest_path' => $manifestPath,
+                        ]);
                         return sprintf('<!-- Entry "%s" not found in manifest. Available keys: %s -->', $entry, implode(', ', array_keys($manifest)));
                     }
                 }
@@ -88,9 +105,20 @@ class ViteExtension extends AbstractExtension
                     }
                 }
 
+                $this->logger->info('Vite script tags generated successfully', [
+                    'entry' => $entry,
+                    'mode' => 'production',
+                    'css_count' => isset($entryData['css']) ? count($entryData['css']) : 0,
+                ]);
+
                 return $html;
             } catch (\Exception $e) {
-                // Log error and return fallback
+                // ✅ P2-LOG-04: Log manifest loading errors
+                $this->logger->error('Error loading Vite manifest', [
+                    'error' => $e->getMessage(),
+                    'manifest_path' => $manifestPath,
+                    'exception_class' => get_class($e),
+                ]);
                 return sprintf('<!-- Error loading Vite manifest: %s -->', htmlspecialchars($e->getMessage()));
             }
         }
@@ -98,6 +126,11 @@ class ViteExtension extends AbstractExtension
         // Si pas de manifest et en dev, essayer le serveur Vite
         if ($this->isDev) {
             $viteUrl = rtrim($this->viteServer, '/');
+            $this->logger->info('Vite script tags generated in dev mode', [
+                'entry' => $entry,
+                'mode' => 'dev',
+                'vite_server' => $viteUrl,
+            ]);
             return sprintf(
                 '<script type="module" src="%s/@vite/client"></script><script type="module" src="%s/%s"></script>',
                 $viteUrl,
@@ -107,6 +140,11 @@ class ViteExtension extends AbstractExtension
         }
 
         // Sinon, erreur
+        $this->logger->error('Vite manifest not found and not in dev mode', [
+            'manifest_path' => $manifestPath,
+            'mode' => 'production',
+            'entry' => $entry,
+        ]);
         return sprintf('<!-- Vite manifest not found: %s -->', $manifestPath);
     }
 
