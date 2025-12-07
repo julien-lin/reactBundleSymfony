@@ -31,11 +31,11 @@ class ViteExtensionCachingTest extends TestCase
             // Use reflection to access the private method
             $reflectionMethod = new \ReflectionMethod($extension, 'loadAndValidateManifest');
             $reflectionMethod->setAccessible(true);
-            
+
             // First call loads from file
             $result1 = $reflectionMethod->invoke($extension, $manifestPath);
             $this->assertEquals($manifestData, $result1);
-            
+
             // Second call should use cache (verify same object returned)
             $result2 = $reflectionMethod->invoke($extension, $manifestPath);
             $this->assertEquals($manifestData, $result2);
@@ -55,30 +55,30 @@ class ViteExtensionCachingTest extends TestCase
         $extension = new ViteExtension(false, 'http://localhost:3000', 'build', $logger);
 
         $tempDir = sys_get_temp_dir();
-        
+
         try {
             // Create two manifest files
             $manifest1Path = $tempDir . DIRECTORY_SEPARATOR . 'manifest1.json';
             $manifest2Path = $tempDir . DIRECTORY_SEPARATOR . 'manifest2.json';
-            
+
             $data1 = ['app' => ['file' => 'app-1.js']];
             $data2 = ['app' => ['file' => 'app-2.js']];
-            
+
             file_put_contents($manifest1Path, json_encode($data1));
             file_put_contents($manifest2Path, json_encode($data2));
 
             $reflectionMethod = new \ReflectionMethod($extension, 'loadAndValidateManifest');
             $reflectionMethod->setAccessible(true);
-            
+
             // Load both manifests
             $result1 = $reflectionMethod->invoke($extension, $manifest1Path);
             $result2 = $reflectionMethod->invoke($extension, $manifest2Path);
-            
+
             // They should be different
             $this->assertNotEquals($result1, $result2);
             $this->assertEquals($data1, $result1);
             $this->assertEquals($data2, $result2);
-            
+
             // Second load from manifest1 should use cache
             $result1Again = $reflectionMethod->invoke($extension, $manifest1Path);
             $this->assertEquals($data1, $result1Again);
@@ -103,7 +103,7 @@ class ViteExtensionCachingTest extends TestCase
         try {
             $reflectionMethod = new \ReflectionMethod($extension, 'loadAndValidateManifest');
             $reflectionMethod->setAccessible(true);
-            
+
             $reflectionMethod->invoke($extension, $manifestPath);
             $this->fail('Should throw JsonException');
         } catch (\JsonException $e) {
@@ -122,10 +122,10 @@ class ViteExtensionCachingTest extends TestCase
 
         $reflectionMethod = new \ReflectionMethod($extension, 'loadAndValidateManifest');
         $reflectionMethod->setAccessible(true);
-        
+
         $this->expectException(\RuntimeException::class);
         $this->expectExceptionMessage('not found');
-        
+
         $reflectionMethod->invoke($extension, '/nonexistent/manifest.json');
     }
 }

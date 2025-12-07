@@ -23,7 +23,8 @@ class ReactAssetsBuildCommand extends Command
         $this
             ->addOption('watch', 'w', InputOption::VALUE_NONE, 'Mode watch pour le développement')
             ->addOption('dev', 'd', InputOption::VALUE_NONE, 'Mode développement avec HMR')
-            ->setHelp('Cette commande build les assets React avec Vite. Utilisez --watch pour le développement ou --dev pour le mode développement avec HMR.');
+            ->addOption('prod', 'p', InputOption::VALUE_NONE, 'Mode production sans HMR')
+            ->setHelp('Cette commande build les assets React avec Vite. Utilisez --watch pour le développement, --dev pour HMR, ou --prod pour la production.');
     }
 
     protected function execute(InputInterface $input, OutputInterface $output): int
@@ -99,8 +100,15 @@ class ReactAssetsBuildCommand extends Command
         // Vérifier la version de Node.js
         $this->checkNodeVersion($io, $npmPath);
 
+        // ✅ P3-CMD-01: Gérer l'option --prod
+        $prod = $input->getOption('prod');
+        if ($prod && $dev) {
+            $io->warning('Options --prod et --dev ne peuvent pas être utilisées ensemble. Utilisation de --prod.');
+            $dev = false;
+        }
+
         // Si npm est dans nvm, charger l'environnement nvm
-        $command = $this->prepareNpmCommand($npmPath, $watch, $dev);
+        $command = $this->prepareNpmCommand($npmPath, $watch, $dev, $prod);
 
         $process = new Process($command);
         $process->setTimeout(null);
@@ -124,7 +132,15 @@ class ReactAssetsBuildCommand extends Command
             });
 
             if (!$watch && !$dev) {
-                $io->success('Build terminé avec succès !');
+                // ✅ P3-CMD-02: Afficher le chemin du manifest en prod
+                $manifestPath = $workingPath . DIRECTORY_SEPARATOR . 'public' . DIRECTORY_SEPARATOR . 'build' . DIRECTORY_SEPARATOR . 'manifest.json';
+                if (file_exists($manifestPath)) {
+                    $io->success('Build terminé avec succès !');
+                    $io->section('Manifest généré:');
+                    $io->writeln('  <info>' . $manifestPath . '</info>');
+                } else {
+                    $io->success('Build terminé avec succès !');
+                }
             }
 
             return Command::SUCCESS;
@@ -228,9 +244,9 @@ class ReactAssetsBuildCommand extends Command
     }
 
     /**
-     * Prépare la commande npm avec support nvm si nécessaire
+     * ✅ P3-CMD-01: Prépare la commande npm avec support nvm et l'option --prod
      */
-    private function prepareNpmCommand(string $npmPath, bool $watch, bool $dev): array
+    private function prepareNpmCommand(string $npmPath, bool $watch, bool $dev, bool $prod = false): array
     {
         // Si npm est dans nvm, utiliser bash pour charger l'environnement
         if (strpos($npmPath, '.nvm') !== false) {
@@ -249,6 +265,12 @@ class ReactAssetsBuildCommand extends Command
                     '-c',
                     "export PATH=\"$nodePath:\$PATH\" && export NVM_DIR=\"$nvmDir\" && $npmPath run build:watch"
                 ];
+            } elseif ($prod) {
+                return [
+                    'bash',
+                    '-c',
+                    "export PATH=\"$nodePath:\$PATH\" && export NVM_DIR=\"$nvmDir\" && $npmPath run build"
+                ];
             } else {
                 return [
                     'bash',
@@ -264,6 +286,7 @@ class ReactAssetsBuildCommand extends Command
         } elseif ($watch) {
             return [$npmPath, 'run', 'build:watch'];
         } else {
+            // Both --prod and default build are the same (build without HMR)
             return [$npmPath, 'run', 'build'];
         }
     }

@@ -50,7 +50,7 @@ class RenderingLoggingTest extends TestCase
         $this->assertArrayHasKey('timestamp', $capturedContext);
         $this->assertArrayHasKey('memory_peak_mb', $capturedContext);
         $this->assertArrayHasKey('duration_ms', $capturedContext);
-        
+
         // Verify values
         $this->assertEquals('TestComponent', $capturedContext['component']);
         $this->assertStringContainsString('name', $capturedContext['props_keys']);

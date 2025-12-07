@@ -86,14 +86,14 @@ class ReactRenderer
                 'request_id' => $_SERVER['X-Request-ID'] ?? getenv('X-Request-ID') ?? substr(uniqid(), -8),
                 'timestamp' => date('Y-m-d H:i:s.u'),
             ]);
-            
+
             // Inclure stack trace en environnement debug
             if (getenv('APP_DEBUG') === 'true' || getenv('DEBUG') === '1') {
                 $this->logger->debug('Stack trace pour erreur de rendu', [
                     'trace' => explode("\n", $e->getTraceAsString()),
                 ]);
             }
-            
+
             $escapedProps = '{}';
         }
 

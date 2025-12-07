@@ -53,11 +53,11 @@ class ViteExtensionErrorHandlingTest extends TestCase
     public function testRenderWithVariousEntryNames(): void
     {
         $extension = new ViteExtension(true, 'http://localhost:3000', 'build');
-        
+
         // Test app entry
         $html = $extension->renderViteScriptTags('app');
         $this->assertStringContainsString('app', $html);
-        
+
         // Test js entry
         $html = $extension->renderViteScriptTags('js/other');
         $this->assertStringContainsString('js/other', $html);

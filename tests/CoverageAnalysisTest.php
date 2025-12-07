@@ -97,19 +97,19 @@ class CoverageAnalysisTest extends TestCase
             // ReactRenderer
             'ReactRenderer::render()',
             'ReactRenderer::renderWithContext()',
-            
+
             // ViteExtension
             'ViteExtension::renderViteScriptTags()',
             'ViteExtension::renderViteLinkTags()',
-            
+
             // ReactExtension
             'ReactExtension::load()',
             'ReactExtension::configure()',
-            
+
             // Commands
             'ReactAssetsBuildCommand::execute()',
             'ReactAssetsBuildCommand::configure()',
-            
+
             // Services
             'BundlePathResolver::resolveBundlePath()',
             'BundlePathResolver::getResourcesPath()',
