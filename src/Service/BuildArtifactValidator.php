@@ -45,7 +45,7 @@ class BuildArtifactValidator
                 if ($file === '.' || $file === '..' || is_dir($buildPath . DIRECTORY_SEPARATOR . $file)) {
                     continue;
                 }
-                
+
                 if (pathinfo($file, PATHINFO_EXTENSION) === 'js') {
                     $jsCount++;
                 } elseif (pathinfo($file, PATHINFO_EXTENSION) === 'css') {
@@ -104,7 +104,7 @@ class BuildArtifactValidator
         }
 
         $manifest = json_decode($content, true);
-        
+
         if (json_last_error() !== JSON_ERROR_NONE) {
             throw new \RuntimeException(
                 sprintf('Invalid JSON in manifest: %s', json_last_error_msg())

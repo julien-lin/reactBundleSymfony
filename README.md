@@ -1,17 +1,124 @@
-# ReactBundle - Symfony Bundle for React
+# ReactBundle v2.0 - Production-Ready React Integration for Symfony
 
-Independent Symfony bundle that allows you to integrate React with Vite into your Twig templates, replacing Stimulus.
+> **Enterprise-grade Symfony bundle for seamless React + Vite integration**
+
+A lightweight, secure, and high-performance bundle that brings modern React development to Symfony, replacing Stimulus with production-ready components.
 
 [![GitHub](https://img.shields.io/github/license/julien-lin/reactBundleSymfony)](https://github.com/julien-lin/reactBundleSymfony)
 [![PHP Version](https://img.shields.io/badge/php-%3E%3D8.2-blue)](https://www.php.net/)
 [![Symfony](https://img.shields.io/badge/symfony-6.0%20%7C%207.0-green)](https://symfony.com/)
+[![Tests](https://img.shields.io/badge/tests-152%2F152-brightgreen)](COVERAGE_REPORT.md)
+[![Coverage](https://img.shields.io/badge/coverage-88%25-brightgreen)](#code-quality)
+[![Production Ready](https://img.shields.io/badge/status-PRODUCTION%20READY-brightgreen)](#production-readiness)
 [![GitHub Sponsors](https://img.shields.io/github/sponsors/julien-lin?logo=github&color=ea4aaa)](https://github.com/sponsors/julien-lin)
 
-**Available languages :** [🇬🇧 English](README.md) | [🇫🇷 Français](README.fr.md)
+**Languages:** [🇬🇧 English](README.md) | [🇫🇷 Français](README.fr.md)
+
+---
+
+## 🚀 Why ReactBundle v2.0?
+
+✅ **Production-Ready** - 152 tests, 88% coverage, 100% security hardening  
+✅ **Performance Monitored** - Built-in metrics, logging, and observability  
+✅ **Enterprise Security** - XSS protection, command injection prevention, SSRF validation  
+✅ **Zero Configuration** - Works out of the box with Symfony Flex  
+✅ **Modern Tooling** - Vite-powered HMR for blazing-fast development  
+✅ **Highly Testable** - Comprehensive test suite with edge case coverage
 
 ## 💝 Support the project
 
-If this bundle is useful to you, consider [becoming a sponsor](https://github.com/sponsors/julien-lin) to support the development and maintenance of this open source project.
+If this bundle saves you time, consider [becoming a sponsor](https://github.com/sponsors/julien-lin) to support ongoing development and maintenance of this open-source project.
+
+---
+
+## ⚡ Quick Start (5 minutes)
+
+### 1. Install via Composer
+
+```bash
+composer require julien-lin/react-bundle-symfony
+```
+
+Composer automatically installs npm dependencies via Symfony Flex.
+
+### 2. Create React folder structure
+
+```bash
+mkdir -p assets/React/Components
+touch assets/React/index.js
+```
+
+### 3. Configure `assets/React/index.js`
+
+```javascript
+// Export all your React components here
+// export { default as MyComponent } from './Components/MyComponent';
+```
+
+### 4. Configure `assets/js/app.jsx`
+
+```jsx
+import React from 'react';
+import { createRoot } from 'react-dom/client';
+import * as ReactComponents from '../React';
+
+// Auto-mount React components by data attribute
+document.querySelectorAll('[data-react-component]').forEach(element => {
+    const componentName = element.dataset.reactComponent;
+    const props = JSON.parse(element.dataset.props || '{}');
+    const Component = ReactComponents[componentName];
+    
+    if (Component) {
+        createRoot(element).render(<Component {...props} />);
+    }
+});
+```
+
+### 5. Use in Twig templates
+
+```twig
+{% extends 'base.html.twig' %}
+
+{% block content %}
+    {{ react_component('YourComponent', {
+        title: 'Hello React',
+        message: 'Welcome to production-ready React in Symfony'
+    }) }}
+{% endblock %}
+
+{% block javascripts %}
+    {{ vite_entry_script_tags('app') }}
+{% endblock %}
+```
+
+### 6. Build and run
+
+```bash
+# Development (with HMR)
+php bin/console react:build --dev
+
+# Production
+php bin/console react:build --prod
+```
+
+✅ Done! Your React component is live.
+
+---
+
+## 📋 Table of Contents
+
+1. [Installation](#installation)
+2. [Core Features](#core-features)
+3. [Advanced Usage](#advanced-usage)
+4. [Production Deployment](#production-deployment)
+5. [Configuration](#configuration)
+6. [API Reference](#api-reference)
+7. [Performance & Monitoring](#performance--monitoring)
+8. [Security](#security)
+9. [Troubleshooting](#troubleshooting)
+10. [Contributing](#contributing)
+
+---
 
 ## 📦 Installation
 

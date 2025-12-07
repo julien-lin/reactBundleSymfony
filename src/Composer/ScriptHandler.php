@@ -68,7 +68,7 @@ class ScriptHandler
         for ($attempt = 1; $attempt <= $maxRetries; $attempt++) {
             try {
                 $io->write('<info>Tentative d\'installation npm... (tentative ' . $attempt . '/' . $maxRetries . ')</info>');
-                
+
                 $process->mustRun(function ($type, $buffer) use ($io) {
                     // Afficher seulement les messages importants pour ne pas polluer la sortie
                     if ($type === Process::ERR || strpos($buffer, 'error') !== false || strpos($buffer, 'Error') !== false) {
@@ -85,7 +85,7 @@ class ScriptHandler
                     $io->write('<comment>Attente de ' . $retryDelay . 's avant la prochaine tentative...</comment>');
                     sleep($retryDelay);
                     $retryDelay *= 2; // Backoff exponentiel (2s, 4s, 8s)
-                    
+
                     // Créer une nouvelle instance du process pour la prochaine tentative
                     $process = new Process($installCommand, $bundlePath);
                     $process->setTimeout(600);
