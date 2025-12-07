@@ -33,6 +33,10 @@ class ReactRenderer
      */
     public function render(string $componentName, array $props = [], ?string $id = null): string
     {
+        // ✅ P1-PERF-01: Ajouter métriques de performance
+        $startTime = microtime(true);
+        $startMemory = memory_get_usage(true);
+
         // ✅ P0-SEC-02: Valider le nom du composant
         if (!$this->isValidComponentName($componentName)) {
             throw new \InvalidArgumentException(
@@ -80,11 +84,27 @@ class ReactRenderer
             $escapedProps = '{}';
         }
 
-        return $this->twig->render('@React/react_component.html.twig', [
+        $html = $this->twig->render('@React/react_component.html.twig', [
             'component_id' => $id,
             'component_name' => $componentName,
             'props' => $escapedProps,
         ]);
+
+        // ✅ P1-PERF-01: Logger les métriques de rendu
+        $endTime = microtime(true);
+        $endMemory = memory_get_usage(true);
+        $duration = ($endTime - $startTime) * 1000; // en millisecondes
+        $memoryUsed = ($endMemory - $startMemory) / 1024; // en KB
+
+        $this->logger->info('React component rendered', [
+            'component' => $componentName,
+            'duration_ms' => round($duration, 2),
+            'memory_kb' => round($memoryUsed, 2),
+            'props_count' => count($props),
+            'html_length' => strlen($html),
+        ]);
+
+        return $html;
     }
 
     /**
