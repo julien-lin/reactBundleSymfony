@@ -97,7 +97,87 @@ class ViteExtension extends AbstractExtension
             'manifest_path' => $manifestPath,
         ]);
 
-        // Si le manifest existe, utiliser le build de production (même en dev)
+        // En mode dev, prioriser le serveur Vite même si le manifest existe
+        // Si pas de manifest et en dev, essayer le serveur Vite
+        if ($this->isDev) {
+            $viteUrl = rtrim($this->viteServer, '/');
+            
+            // ✅ P0-IMPROVEMENT: Vérifier optionnellement si le serveur Vite est accessible
+            $serverAccessible = $this->checkViteServerAccessibility($viteUrl);
+            
+            if ($serverAccessible) {
+                $this->logger->info('Vite script tags generated in dev mode', [
+                    'entry' => $entry,
+                    'mode' => 'dev',
+                    'vite_server' => $viteUrl,
+                ]);
+                return sprintf(
+                    '<script type="module" src="%s/@vite/client"></script><script type="module" src="%s/%s"></script>',
+                    $viteUrl,
+                    $viteUrl,
+                    $entry === 'app' ? 'js/app.jsx' : $entry
+                );
+            }
+            
+            // Si le serveur n'est pas accessible, fallback vers le manifest si disponible
+            if (!$serverAccessible && $manifestExists) {
+                $this->logger->warning('Vite server not accessible in dev mode, falling back to manifest', [
+                    'entry' => $entry,
+                    'mode' => 'dev',
+                    'vite_server' => $viteUrl,
+                    'manifest_path' => $manifestPath,
+                ]);
+                // Continuer avec le manifest (fallback)
+            } elseif (!$serverAccessible) {
+                $bundlePath = $this->getBundlePath();
+                $vendorSeparator = DIRECTORY_SEPARATOR . 'vendor' . DIRECTORY_SEPARATOR;
+                if (strpos($bundlePath, $vendorSeparator) !== false) {
+                    $projectRoot = dirname($bundlePath, 3);
+                } else {
+                    $projectRoot = dirname($bundlePath, 2);
+                }
+                $projectRoot = $this->normalizePath($projectRoot);
+                $buildDir = $this->normalizePath($this->buildDir);
+                
+                $this->logger->warning('Vite server not accessible in dev mode', [
+                    'entry' => $entry,
+                    'mode' => 'dev',
+                    'vite_server' => $viteUrl,
+                    'suggestion' => 'Run: php bin/console react:build --dev',
+                ]);
+                
+                // Fallback gracieux : utiliser le manifest si disponible, sinon afficher un message
+                $fallbackManifestPath = $projectRoot . DIRECTORY_SEPARATOR . 'public' . DIRECTORY_SEPARATOR . $buildDir . DIRECTORY_SEPARATOR . 'manifest.json';
+                if (file_exists($fallbackManifestPath)) {
+                    $this->logger->info('Falling back to production manifest', [
+                        'manifest_path' => $fallbackManifestPath,
+                    ]);
+                    // Réessayer avec le manifest
+                    try {
+                        $manifest = $this->loadAndValidateManifest($fallbackManifestPath);
+                        $manifestKey = $entry === 'app' ? 'js/app.jsx' : $entry;
+                        if (isset($manifest[$manifestKey])) {
+                            $entryData = $manifest[$manifestKey];
+                            return sprintf(
+                                '<script type="module" src="/%s/%s"></script>',
+                                $this->buildDir,
+                                $entryData['file']
+                            );
+                        }
+                    } catch (\Exception $e) {
+                        // Ignorer et continuer avec le message d'erreur
+                    }
+                }
+                
+                // Afficher un commentaire HTML informatif
+                return sprintf(
+                    '<!-- Vite server not accessible at %s. Run: npm run dev -->',
+                    htmlspecialchars($viteUrl, ENT_QUOTES, 'UTF-8')
+                );
+            }
+        }
+
+        // Si le manifest existe, utiliser le build de production
         if ($manifestExists) {
             try {
                 $manifest = $this->loadAndValidateManifest($manifestPath);
