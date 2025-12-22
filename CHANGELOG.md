@@ -7,6 +7,17 @@ et ce projet adhère au [Semantic Versioning](https://semver.org/spec/v2.0.0.htm
 
 ## [Unreleased]
 
+## [2.1.1] - 2024-12-22
+
+### Corrigé
+- ✅ Fix : Correction du chemin du build directory dans Docker (évite le double "public/public/build")
+- ✅ Fix : Priorisation du serveur Vite en mode dev pour activer le HMR même si un manifest existe
+- ✅ Fix : Amélioration de la validation des répertoires avec fallback pour Docker
+
+### Modifié
+- ✅ `ReactExtension::validateDirectories()` utilise maintenant `BundlePathResolver` pour calculer correctement le project root
+- ✅ `ViteExtension::renderViteScriptTags()` priorise maintenant le serveur Vite en mode dev avant de vérifier le manifest
+
 ## [2.1.0] - 2024-12-22
 
 ### Ajouté

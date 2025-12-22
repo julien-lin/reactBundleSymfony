@@ -41,17 +41,25 @@ class ReactExtension extends Extension
      */
     private function validateDirectories(string $buildDir, string $assetsDir): void
     {
-        // Public build directory
-        $publicBuildPath = getcwd() . DIRECTORY_SEPARATOR . 'public' . DIRECTORY_SEPARATOR . $buildDir;
+        // Utiliser BundlePathResolver pour calculer correctement le project root
+        $projectRoot = \ReactBundle\Service\BundlePathResolver::getProjectRoot();
+        
+        // Public build directory - vérifier si public/ existe dans le project root
+        $publicBuildPath = $projectRoot . DIRECTORY_SEPARATOR . 'public' . DIRECTORY_SEPARATOR . $buildDir;
         if (!is_dir($publicBuildPath)) {
-            trigger_error(
-                sprintf('Build directory not found: %s', $publicBuildPath),
-                E_USER_WARNING
-            );
+            // Si public/build n'existe pas, vérifier si on est dans un contexte où public est déjà le root
+            // (cas Docker où /var/www/html est déjà le public directory)
+            $alternatePath = $projectRoot . DIRECTORY_SEPARATOR . $buildDir;
+            if (!is_dir($alternatePath)) {
+                trigger_error(
+                    sprintf('Build directory not found: %s (also tried: %s)', $publicBuildPath, $alternatePath),
+                    E_USER_WARNING
+                );
+            }
         }
 
         // Assets directory
-        $assetsPath = getcwd() . DIRECTORY_SEPARATOR . $assetsDir;
+        $assetsPath = $projectRoot . DIRECTORY_SEPARATOR . $assetsDir;
         if (!is_dir($assetsPath)) {
             trigger_error(
                 sprintf('Assets directory not found: %s', $assetsPath),
