@@ -834,6 +834,55 @@ echo "✓ Verification complete!"
 
 ---
 
+## Docker Deployment
+
+### Quick Start avec Docker
+
+Pour un guide complet de démarrage avec Docker en 5 minutes, voir **[QUICK_START_DOCKER.md](QUICK_START_DOCKER.md)**.
+
+### Configuration HMR pour Docker
+
+Le bundle génère automatiquement un `vite.config.js` optimisé pour Docker avec :
+- ✅ `host: '0.0.0.0'` pour accepter les connexions externes
+- ✅ `hmr.host: 'localhost'` pour le HMR depuis le navigateur
+- ✅ `watch.usePolling: true` pour Docker
+
+### Docker Compose Example
+
+```yaml
+version: '3.8'
+
+services:
+  php:
+    image: php:8.4-fpm
+    volumes:
+      - .:/var/www/html
+
+  nginx:
+    image: nginx:alpine
+    ports:
+      - "80:80"
+      - "3000:3000"
+    volumes:
+      - .:/var/www/html
+
+  node:
+    image: node:20-alpine
+    volumes:
+      - .:/var/www/html
+    working_dir: /var/www/html
+    command: npm run dev
+    ports:
+      - "3000:3000"
+    environment:
+      - VITE_HMR_HOST=localhost
+      - VITE_HMR_PORT=3000
+```
+
+**Voir [QUICK_START_DOCKER.md](QUICK_START_DOCKER.md) pour plus de détails.**
+
+---
+
 ## License
 
 MIT License - See [LICENSE](../LICENSE) for details

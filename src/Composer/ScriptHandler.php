@@ -202,4 +202,77 @@ class ScriptHandler
         // SÉCURITÉ: Retourner le tableau directement - Process() gère les tableaux en toute sécurité
         return [$npmPath, 'install'];
     }
+
+    /**
+     * Génère automatiquement un vite.config.js optimisé dans le projet
+     * ✅ P0-IMPROVEMENT: Génération automatique de vite.config.js
+     * ✅ P1-IMPROVEMENT: Génération optionnelle de tsconfig.json
+     */
+    public static function generateViteConfig(Event $event): void
+    {
+        $io = $event->getIO();
+        
+        // Trouver le projet root (remonter depuis vendor/ ou src/)
+        $bundlePath = __DIR__ . '/../../..';
+        $bundlePath = str_replace(['\\', '/'], DIRECTORY_SEPARATOR, $bundlePath);
+        
+        $vendorSeparator = DIRECTORY_SEPARATOR . 'vendor' . DIRECTORY_SEPARATOR;
+        if (strpos($bundlePath, $vendorSeparator) !== false) {
+            $projectRoot = dirname($bundlePath, 3);
+        } else {
+            $projectRoot = dirname($bundlePath, 2);
+        }
+        
+        $viteConfigPath = $projectRoot . DIRECTORY_SEPARATOR . 'vite.config.js';
+        
+        // Ne pas écraser un vite.config.js existant
+        if (file_exists($viteConfigPath)) {
+            $io->write('<info>vite.config.js existe déjà, pas de génération automatique.</info>');
+        } else {
+            // Lire le template
+            $templatePath = __DIR__ . '/../../Resources/templates/vite.config.js';
+            if (file_exists($templatePath)) {
+                $template = file_get_contents($templatePath);
+                
+                // Écrire le fichier
+                if (file_put_contents($viteConfigPath, $template) !== false) {
+                    $io->write('<info>✓ vite.config.js généré automatiquement dans la racine du projet</info>');
+                    $io->write('<comment>Vous pouvez le personnaliser selon vos besoins.</comment>');
+                }
+            }
+        }
+        
+        // ✅ P1-IMPROVEMENT: Générer aussi tsconfig.json si demandé ou si TypeScript est détecté
+        $tsConfigPath = $projectRoot . DIRECTORY_SEPARATOR . 'tsconfig.json';
+        if (!file_exists($tsConfigPath)) {
+            $tsConfigTemplatePath = __DIR__ . '/../../Resources/templates/tsconfig.json';
+            if (file_exists($tsConfigTemplatePath)) {
+                $tsConfigTemplate = file_get_contents($tsConfigTemplatePath);
+                
+                // Vérifier si TypeScript est installé
+                $packageJsonPath = $projectRoot . DIRECTORY_SEPARATOR . 'package.json';
+                $hasTypeScript = false;
+                if (file_exists($packageJsonPath)) {
+                    $packageJson = json_decode(file_get_contents($packageJsonPath), true);
+                    $hasTypeScript = isset($packageJson['devDependencies']['typescript']) ||
+                                   isset($packageJson['dependencies']['typescript']);
+                }
+                
+                if ($hasTypeScript || $io->askConfirmation('<question>Voulez-vous générer tsconfig.json pour TypeScript ? (y/n)</question> ', false)) {
+                    if (file_put_contents($tsConfigPath, $tsConfigTemplate) !== false) {
+                        // Générer aussi tsconfig.node.json
+                        $tsConfigNodePath = $projectRoot . DIRECTORY_SEPARATOR . 'tsconfig.node.json';
+                        $tsConfigNodeTemplatePath = __DIR__ . '/../../Resources/templates/tsconfig.node.json';
+                        if (file_exists($tsConfigNodeTemplatePath)) {
+                            $tsConfigNodeTemplate = file_get_contents($tsConfigNodeTemplatePath);
+                            file_put_contents($tsConfigNodePath, $tsConfigNodeTemplate);
+                        }
+                        
+                        $io->write('<info>✓ tsconfig.json généré automatiquement</info>');
+                        $io->write('<comment>Vous pouvez maintenant utiliser TypeScript (.tsx) pour vos composants React.</comment>');
+                    }
+                }
+            }
+        }
+    }
 }

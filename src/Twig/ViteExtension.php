@@ -16,13 +16,42 @@ class ViteExtension extends AbstractExtension
     private string $buildDir;
     private LoggerInterface $logger;
     private array $manifestCache = []; // ✅ P2-PERF-01: Manifest caching
+    private ?string $environment = null;
+    private bool $kernelDebug;
 
     public function __construct(bool $isDev = false, string $viteServer = 'http://localhost:3000', string $buildDir = 'build', ?LoggerInterface $logger = null)
     {
+        $this->kernelDebug = $isDev;
+        // isDev sera recalculé dans setEnvironment si appelé
         $this->isDev = $isDev;
         $this->viteServer = $viteServer;
         $this->buildDir = $buildDir;
         $this->logger = $logger ?? new NullLogger();
+    }
+    
+    /**
+     * Définit l'environnement Symfony pour améliorer la détection du mode dev
+     * ✅ Amélioration : Le mode dev est actif si kernel.debug est true ET kernel.environment est 'dev'
+     */
+    public function setEnvironment(string $environment): void
+    {
+        $this->environment = $environment;
+        // Recalculer isDev : mode dev = debug activé ET environnement = 'dev'
+        $this->isDev = $this->kernelDebug && ($environment === 'dev');
+        
+        $this->logger->debug('ViteExtension environment set', [
+            'environment' => $environment,
+            'kernel_debug' => $this->kernelDebug,
+            'is_dev' => $this->isDev,
+        ]);
+    }
+
+    /**
+     * Récupère l'état du mode dev (pour les tests)
+     */
+    public function getIsDev(): bool
+    {
+        return $this->isDev;
     }
 
     public function getFunctions(): array
@@ -127,6 +156,58 @@ class ViteExtension extends AbstractExtension
         // Si pas de manifest et en dev, essayer le serveur Vite
         if ($this->isDev) {
             $viteUrl = rtrim($this->viteServer, '/');
+            
+            // ✅ P0-IMPROVEMENT: Vérifier optionnellement si le serveur Vite est accessible
+            $serverAccessible = $this->checkViteServerAccessibility($viteUrl);
+            
+            if (!$serverAccessible) {
+                $bundlePath = $this->getBundlePath();
+                $vendorSeparator = DIRECTORY_SEPARATOR . 'vendor' . DIRECTORY_SEPARATOR;
+                if (strpos($bundlePath, $vendorSeparator) !== false) {
+                    $projectRoot = dirname($bundlePath, 3);
+                } else {
+                    $projectRoot = dirname($bundlePath, 2);
+                }
+                $projectRoot = $this->normalizePath($projectRoot);
+                $buildDir = $this->normalizePath($this->buildDir);
+                
+                $this->logger->warning('Vite server not accessible in dev mode', [
+                    'entry' => $entry,
+                    'mode' => 'dev',
+                    'vite_server' => $viteUrl,
+                    'suggestion' => 'Run: php bin/console react:build --dev',
+                ]);
+                
+                // Fallback gracieux : utiliser le manifest si disponible, sinon afficher un message
+                $fallbackManifestPath = $projectRoot . DIRECTORY_SEPARATOR . 'public' . DIRECTORY_SEPARATOR . $buildDir . DIRECTORY_SEPARATOR . 'manifest.json';
+                if (file_exists($fallbackManifestPath)) {
+                    $this->logger->info('Falling back to production manifest', [
+                        'manifest_path' => $fallbackManifestPath,
+                    ]);
+                    // Réessayer avec le manifest
+                    try {
+                        $manifest = $this->loadAndValidateManifest($fallbackManifestPath);
+                        $manifestKey = $entry === 'app' ? 'js/app.jsx' : $entry;
+                        if (isset($manifest[$manifestKey])) {
+                            $entryData = $manifest[$manifestKey];
+                            return sprintf(
+                                '<script type="module" src="/%s/%s"></script>',
+                                $this->buildDir,
+                                $entryData['file']
+                            );
+                        }
+                    } catch (\Exception $e) {
+                        // Ignorer et continuer avec le message d'erreur
+                    }
+                }
+                
+                // Afficher un commentaire HTML informatif
+                return sprintf(
+                    '<!-- Vite server not accessible at %s. Run: php bin/console react:build --dev -->',
+                    htmlspecialchars($viteUrl, ENT_QUOTES, 'UTF-8')
+                );
+            }
+            
             $this->logger->info('Vite script tags generated in dev mode', [
                 'entry' => $entry,
                 'mode' => 'dev',
@@ -296,5 +377,64 @@ class ViteExtension extends AbstractExtension
         $this->logger->debug('Manifest loaded and cached', ['path' => $manifestPath, 'entry_count' => count($manifest)]);
 
         return $manifest;
+    }
+
+    /**
+     * ✅ P0-IMPROVEMENT: Vérifie si le serveur Vite est accessible
+     * Cette vérification est optionnelle et peut être désactivée pour améliorer les performances
+     *
+     * @param string $viteUrl URL du serveur Vite
+     * @return bool True si le serveur est accessible, false sinon
+     */
+    private function checkViteServerAccessibility(string $viteUrl): bool
+    {
+        // Désactiver la vérification si on n'est pas en mode debug strict
+        // pour éviter les ralentissements en production
+        if (!$this->isDev) {
+            return false;
+        }
+
+        // Utiliser un cache statique pour éviter de vérifier à chaque requête
+        static $cache = [];
+        $cacheKey = md5($viteUrl);
+        
+        // Cache valide pendant 5 secondes
+        if (isset($cache[$cacheKey])) {
+            [$result, $timestamp] = $cache[$cacheKey];
+            if (time() - $timestamp < 5) {
+                return $result;
+            }
+        }
+
+        try {
+            // Utiliser file_get_contents avec un timeout court pour éviter les blocages
+            $context = stream_context_create([
+                'http' => [
+                    'timeout' => 1,
+                    'method' => 'GET',
+                    'header' => "User-Agent: ReactBundle/2.0\r\n",
+                ],
+            ]);
+
+            $url = rtrim($viteUrl, '/') . '/@vite/client';
+            $result = @file_get_contents($url, false, $context);
+            
+            $isAccessible = $result !== false;
+            
+            // Mettre en cache le résultat
+            $cache[$cacheKey] = [$isAccessible, time()];
+            
+            return $isAccessible;
+        } catch (\Exception $e) {
+            $this->logger->debug('Vite server accessibility check failed', [
+                'error' => $e->getMessage(),
+                'vite_url' => $viteUrl,
+            ]);
+            
+            // Mettre en cache le résultat négatif
+            $cache[$cacheKey] = [false, time()];
+            
+            return false;
+        }
     }
 }

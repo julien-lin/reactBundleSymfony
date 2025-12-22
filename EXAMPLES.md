@@ -727,6 +727,248 @@ export default ProductCard;
 
 ---
 
+## TypeScript Examples
+
+### Example: Typed Weather Component
+
+**Component:** `assets/React/Components/WeatherCard.tsx`
+
+```tsx
+import React, { useState, useEffect } from 'react';
+
+interface WeatherData {
+  city: string;
+  temperature: number;
+  description: string;
+  humidity?: number;
+  windSpeed?: number;
+}
+
+interface WeatherCardProps {
+  initialCity: string;
+  onRefresh?: (city: string) => void;
+}
+
+const WeatherCard: React.FC<WeatherCardProps> = ({ initialCity, onRefresh }) => {
+  const [weather, setWeather] = useState<WeatherData | null>(null);
+  const [loading, setLoading] = useState<boolean>(false);
+  const [error, setError] = useState<string | null>(null);
+
+  const fetchWeather = async (city: string): Promise<void> => {
+    setLoading(true);
+    setError(null);
+    
+    try {
+      const response = await fetch(`/api/weather/current?city=${encodeURIComponent(city)}`);
+      if (!response.ok) {
+        throw new Error('Failed to fetch weather');
+      }
+      const data = await response.json();
+      setWeather(data.data);
+    } catch (err) {
+      setError(err instanceof Error ? err.message : 'Unknown error');
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  useEffect(() => {
+    fetchWeather(initialCity);
+  }, [initialCity]);
+
+  const handleRefresh = (): void => {
+    if (weather) {
+      fetchWeather(weather.city);
+      onRefresh?.(weather.city);
+    }
+  };
+
+  if (loading) {
+    return <div className="weather-card loading">Loading weather...</div>;
+  }
+
+  if (error) {
+    return (
+      <div className="weather-card error">
+        <p>Error: {error}</p>
+        <button onClick={handleRefresh}>Retry</button>
+      </div>
+    );
+  }
+
+  if (!weather) {
+    return null;
+  }
+
+  return (
+    <div className="weather-card">
+      <div className="weather-card__header">
+        <h2>{weather.city}</h2>
+        <button onClick={handleRefresh} className="btn-refresh">
+          ↻ Refresh
+        </button>
+      </div>
+      <div className="weather-card__content">
+        <div className="temperature">{weather.temperature}°C</div>
+        <p className="description">{weather.description}</p>
+        <div className="weather-card__details">
+          {weather.humidity !== undefined && (
+            <span>Humidity: {weather.humidity}%</span>
+          )}
+          {weather.windSpeed !== undefined && (
+            <span>Wind: {weather.windSpeed} km/h</span>
+          )}
+        </div>
+      </div>
+    </div>
+  );
+};
+
+export default WeatherCard;
+```
+
+**Export in `assets/React/index.ts`:**
+```typescript
+export { default as WeatherCard } from './Components/WeatherCard';
+```
+
+**Usage in Twig:**
+```twig
+{{ react_component('WeatherCard', {
+    initialCity: 'Paris'
+}) }}
+```
+
+### Example: Typed Form Component
+
+**Component:** `assets/React/Components/ContactForm.tsx`
+
+```tsx
+import React, { useState, FormEvent } from 'react';
+
+interface ContactFormData {
+  name: string;
+  email: string;
+  message: string;
+}
+
+interface ContactFormProps {
+  csrfToken: string;
+  onSubmit?: (data: ContactFormData) => void;
+}
+
+const ContactForm: React.FC<ContactFormProps> = ({ csrfToken, onSubmit }) => {
+  const [formData, setFormData] = useState<ContactFormData>({
+    name: '',
+    email: '',
+    message: ''
+  });
+  const [errors, setErrors] = useState<Partial<ContactFormData>>({});
+  const [submitting, setSubmitting] = useState<boolean>(false);
+
+  const validate = (): boolean => {
+    const newErrors: Partial<ContactFormData> = {};
+    
+    if (!formData.name.trim()) {
+      newErrors.name = 'Name is required';
+    }
+    
+    if (!formData.email.trim()) {
+      newErrors.email = 'Email is required';
+    } else if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(formData.email)) {
+      newErrors.email = 'Invalid email format';
+    }
+    
+    if (!formData.message.trim()) {
+      newErrors.message = 'Message is required';
+    }
+    
+    setErrors(newErrors);
+    return Object.keys(newErrors).length === 0;
+  };
+
+  const handleSubmit = async (e: FormEvent<HTMLFormElement>): Promise<void> => {
+    e.preventDefault();
+    
+    if (!validate()) {
+      return;
+    }
+    
+    setSubmitting(true);
+    
+    try {
+      const response = await fetch('/api/contact', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'X-CSRF-Token': csrfToken
+        },
+        body: JSON.stringify(formData)
+      });
+      
+      if (response.ok) {
+        onSubmit?.(formData);
+        setFormData({ name: '', email: '', message: '' });
+      }
+    } catch (error) {
+      console.error('Form submission error:', error);
+    } finally {
+      setSubmitting(false);
+    }
+  };
+
+  return (
+    <form onSubmit={handleSubmit} className="contact-form">
+      <div className="form-group">
+        <label htmlFor="name">Name</label>
+        <input
+          id="name"
+          type="text"
+          value={formData.name}
+          onChange={(e) => setFormData({ ...formData, name: e.target.value })}
+          className={errors.name ? 'error' : ''}
+        />
+        {errors.name && <span className="error-message">{errors.name}</span>}
+      </div>
+      
+      <div className="form-group">
+        <label htmlFor="email">Email</label>
+        <input
+          id="email"
+          type="email"
+          value={formData.email}
+          onChange={(e) => setFormData({ ...formData, email: e.target.value })}
+          className={errors.email ? 'error' : ''}
+        />
+        {errors.email && <span className="error-message">{errors.email}</span>}
+      </div>
+      
+      <div className="form-group">
+        <label htmlFor="message">Message</label>
+        <textarea
+          id="message"
+          value={formData.message}
+          onChange={(e) => setFormData({ ...formData, message: e.target.value })}
+          className={errors.message ? 'error' : ''}
+          rows={5}
+        />
+        {errors.message && <span className="error-message">{errors.message}</span>}
+      </div>
+      
+      <button type="submit" disabled={submitting}>
+        {submitting ? 'Sending...' : 'Send Message'}
+      </button>
+    </form>
+  );
+};
+
+export default ContactForm;
+```
+
+**See [TYPESCRIPT.md](TYPESCRIPT.md) for complete TypeScript documentation.**
+
+---
+
 ## Summary
 
 These examples demonstrate:
@@ -738,9 +980,11 @@ These examples demonstrate:
 - ✅ Real-time updates
 - ✅ Error handling
 - ✅ User feedback
+- ✅ TypeScript type safety
 
 For more examples and advanced patterns, see:
-- 📖 [Full Documentation](../README.md)
+- 📖 [Full Documentation](README.md)
+- 📘 [TypeScript Guide](TYPESCRIPT.md)
 - ⚙️ [API Reference](API.md)
 - 🐛 [Troubleshooting](TROUBLESHOOTING.md)
 

@@ -27,3 +27,12 @@ services:
             $buildDir: '%react.build_dir%'
         tags:
             - { name: twig.extension }
+        calls:
+            - [setEnvironment, ['%kernel.environment%']]
+
+    ReactBundle\Command\ReactDevCheckCommand:
+        arguments:
+            $viteServer: '%react.vite_server%'
+            $isDev: '%kernel.debug%'
+        tags:
+            - { name: console.command }

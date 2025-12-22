@@ -510,7 +510,9 @@ export default defineConfig({
 });
 ```
 
-### HMR Configuration (Docker)
+### HMR Configuration (Docker) ✅ Amélioré
+
+**✅ P1-IMPROVEMENT:** Configuration automatique pour Docker
 
 For development with Docker:
 
