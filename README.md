@@ -109,14 +109,15 @@ php bin/console react:build --prod
 
 1. [Installation](#installation)
 2. [Core Features](#core-features)
-3. [Advanced Usage](#advanced-usage)
-4. [Production Deployment](#production-deployment)
-5. [Configuration](#configuration)
-6. [API Reference](#api-reference)
-7. [Performance & Monitoring](#performance--monitoring)
-8. [Security](#security)
-9. [Troubleshooting](#troubleshooting)
-10. [Contributing](#contributing)
+3. [TypeScript Support](#typescript-support)
+4. [Advanced Usage](#advanced-usage)
+5. [Production Deployment](#production-deployment)
+6. [Configuration](#configuration)
+7. [API Reference](#api-reference)
+8. [Performance & Monitoring](#performance--monitoring)
+9. [Security](#security)
+10. [Troubleshooting](#troubleshooting)
+11. [Contributing](#contributing)
 
 ---
 
@@ -219,6 +220,84 @@ assets/
 ```
 
 **Important**: The component name in `react_component()` must match exactly the name used in the export of `assets/React/index.js`.
+
+## TypeScript Support
+
+ReactBundleSymfony supports TypeScript out of the box. You can write your React components in TypeScript (`.tsx` files) for full type safety.
+
+### Quick Setup
+
+1. **Install TypeScript:**
+```bash
+npm install --save-dev typescript @types/react @types/react-dom
+```
+
+2. **Create `tsconfig.json`:**
+```json
+{
+  "compilerOptions": {
+    "target": "ES2020",
+    "lib": ["ES2020", "DOM", "DOM.Iterable"],
+    "module": "ESNext",
+    "jsx": "react-jsx",
+    "strict": true,
+    "moduleResolution": "bundler",
+    "baseUrl": ".",
+    "paths": {
+      "@/*": ["./assets/React/*"]
+    }
+  },
+  "include": ["assets"]
+}
+```
+
+3. **Rename files to `.tsx`:**
+- `assets/js/app.jsx` → `assets/js/app.tsx`
+- `assets/React/Components/*.jsx` → `assets/React/Components/*.tsx`
+
+4. **Use TypeScript in components:**
+```tsx
+// assets/React/Components/WeatherCard.tsx
+import React from 'react';
+
+interface WeatherCardProps {
+  city: string;
+  temperature: number;
+  description: string;
+}
+
+const WeatherCard: React.FC<WeatherCardProps> = ({ city, temperature, description }) => {
+  return (
+    <div>
+      <h2>{city}</h2>
+      <p>{temperature}°C - {description}</p>
+    </div>
+  );
+};
+
+export default WeatherCard;
+```
+
+**See [TYPESCRIPT.md](TYPESCRIPT.md) for complete TypeScript documentation.**
+
+### Docker Quick Start
+
+Get started with Docker in 5 minutes:
+
+```bash
+# 1. Install bundle
+composer require julien-lin/react-bundle-symfony
+
+# 2. Create docker-compose.yml (see QUICK_START_DOCKER.md)
+
+# 3. Start services
+docker-compose up -d
+
+# 4. Start Vite dev server
+docker-compose exec node npm run dev
+```
+
+**See [QUICK_START_DOCKER.md](QUICK_START_DOCKER.md) for complete Docker guide.**
 
 ### Build assets
 
@@ -438,10 +517,14 @@ export { default as ProductCard } from './Components/ProductCard';
 
 ## Migration from Stimulus
 
-1. Identify your Stimulus controllers
-2. Create equivalent React components
+ReactBundleSymfony is designed as a modern replacement for Stimulus in Symfony applications.
+
+**Quick migration:**
+1. Install ReactBundle: `composer require julien-lin/react-bundle-symfony`
+2. Convert Stimulus controllers to React components
 3. Replace `data-controller="..."` with `{{ react_component(...) }}`
-4. Test individually
+
+**See [MIGRATION_STIMULUS.md](MIGRATION_STIMULUS.md) for complete migration guide with examples.**
 
 ## Advanced configuration
 

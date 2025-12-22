@@ -7,7 +7,30 @@ et ce projet adhère au [Semantic Versioning](https://semver.org/spec/v2.0.0.htm
 
 ## [Unreleased]
 
-## [2.0.1] - 2025-12-22
+## [2.1.0] - 2024-12-22
+
+### Ajouté
+- ✅ Commande `react:dev:check` pour vérifier l'accessibilité du serveur Vite
+- ✅ Génération automatique de `vite.config.js` lors de l'installation
+- ✅ Génération automatique de `tsconfig.json` pour le support TypeScript
+- ✅ Support TypeScript complet avec documentation (TYPESCRIPT.md)
+- ✅ Guide Quick Start Docker (QUICK_START_DOCKER.md)
+- ✅ Guide de migration depuis Stimulus (MIGRATION_STIMULUS.md)
+- ✅ Vérification automatique du serveur Vite dans ViteExtension avec fallback
+- ✅ Détection améliorée du mode dev (kernel.debug ET kernel.environment === 'dev')
+- ✅ Tests E2E complets (ViteBuildTest, ComponentRenderingTest, ViteScriptTagsTest)
+
+### Modifié
+- ✅ Amélioration de la configuration HMR pour Docker (template vite.config.js optimisé)
+- ✅ Documentation améliorée (README.md, CONFIG.md, DEPLOYMENT.md, EXAMPLES.md)
+- ✅ Template vite.config.js généré automatiquement avec configuration Docker optimale
+
+### Tests
+- ✅ 32 tests unitaires ajoutés pour la phase P0
+- ✅ 3 suites de tests E2E ajoutées (ViteBuildTest, ComponentRenderingTest, ViteScriptTagsTest)
+- ✅ Total : 35+ nouveaux tests
+
+## [2.0.1] - 2024-12-22
 
 ### Ajouté
 - Support de Symfony 8.0 dans les contraintes de dépendances

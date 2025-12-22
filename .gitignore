@@ -33,6 +33,7 @@ npm-debug.log*
 .env.local
 
 # Documentation interne (non publiée) - Dev temporaire
+DOCUMENTATION/
 documentation/PHASE*.md
 documentation/PROJECT_STATUS.md
 documentation/PLAN_*.md

@@ -10,7 +10,7 @@
         "twig"
     ],
     "license": "MIT",
-    "version": "2.0.1",
+    "version": "2.1.0",
     "authors": [
         {
             "name": "Julien Lin",
@@ -55,7 +55,8 @@
     },
     "scripts": {
         "post-install-cmd": [
-            "ReactBundle\\Composer\\ScriptHandler::installAssets"
+            "ReactBundle\\Composer\\ScriptHandler::installAssets",
+            "ReactBundle\\Composer\\ScriptHandler::generateViteConfig"
         ],
         "post-update-cmd": [
             "ReactBundle\\Composer\\ScriptHandler::installAssets"
