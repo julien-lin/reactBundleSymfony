@@ -7,6 +7,16 @@ et ce projet adhère au [Semantic Versioning](https://semver.org/spec/v2.0.0.htm
 
 ## [Unreleased]
 
+## [2.0.1] - 2025-12-22
+
+### Ajouté
+- Support de Symfony 8.0 dans les contraintes de dépendances
+- Compatibilité avec Symfony 7.0 et 8.0 (suppression du support Symfony 6.0)
+
+### Modifié
+- Mise à jour des contraintes `symfony/framework-bundle`, `symfony/twig-bundle`, `symfony/console`, `symfony/process` et `symfony/yaml` pour supporter Symfony 7.0 et 8.0
+- Mise à jour de `extra.symfony.require` pour refléter le support Symfony 7.0|8.0
+
 ### 🚀 Phase 3 - Production Ready (6 décembre 2025)
 
 #### ✅ Sécurité - Améliorations Critiques
